@@ -6,9 +6,9 @@ services:
     environment:
       POSTGRES_USER: rails_user
       POSTGRES_PASSWORD: rails_password
-      POSTGRES_DB: crud_api_development
+      POSTGRES_DB: rph_development
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U rails_user -d crud_api_development"]
+      test: ["CMD-SHELL", "pg_isready -U rails_user -d rph_development"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -30,10 +30,10 @@ services:
       - .:/app
       - bundle_cache:/usr/local/bundle
     ports:
-      - "3000:3000"
+      - "3001:3000"
     environment:
       RAILS_ENV: development
-      DATABASE_URL: postgres://rails_user:rails_password@db:5432/crud_api_development
+      DATABASE_URL: postgres://rails_user:rails_password@db:5432/rph_development
       REDIS_URL: redis://redis:6379/0
     depends_on:
       db:
@@ -51,7 +51,7 @@ services:
       - bundle_cache:/usr/local/bundle
     environment:
       RAILS_ENV: development
-      DATABASE_URL: postgres://rails_user:rails_password@db:5432/crud_api_development
+      DATABASE_URL: postgres://rails_user:rails_password@db:5432/rph_development
       REDIS_URL: redis://redis:6379/0
     depends_on:
       db:

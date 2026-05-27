@@ -1,8 +1,7 @@
 module Api
   module V1
     module Auth
-      class SessionsController < Devise::SessionsController
-        respond_to :json
+      class SessionsController < BaseController
         before_action :authenticate_user!, only: :destroy
 
         def create

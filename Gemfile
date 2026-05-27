@@ -25,6 +25,7 @@ gem "redis", "~> 5.0"
 group :development, :test do
   gem "debug", platforms: %i[mri windows]
   gem "rspec-rails", "~> 6.1"
+  gem "rswag-specs", "~> 2.16"
   gem "factory_bot_rails", "~> 6.4"
   gem "faker", "~> 3.2"
   gem "dotenv-rails", "~> 3.1"
@@ -32,4 +33,6 @@ end
 
 group :development do
   gem "annotate", "~> 3.2"
+  gem "rswag-api", "~> 2.16"
+  gem "rswag-ui", "~> 2.16"
 end

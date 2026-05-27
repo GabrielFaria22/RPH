@@ -1,0 +1,1126 @@
+---
+openapi: 3.0.3
+info:
+  title: RPH API
+  version: v1
+  description: JSON API for authentication, people, universes, worlds, characters,
+    and character relations.
+servers:
+- url: http://localhost:3001
+  description: Local Docker development server
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: 'JWT returned by POST /api/v1/auth/login. Send as: Bearer <token>.'
+  schemas:
+    SignupRequest:
+      type: object
+      required:
+      - user
+      properties:
+        user:
+          type: object
+          required:
+          - email
+          - password
+          - password_confirmation
+          properties:
+            email:
+              type: string
+              format: email
+              description: Email used to log in.
+              example: writer@example.com
+            password:
+              type: string
+              format: password
+              description: Password. Must be 10 to 128 characters.
+              example: password123
+            password_confirmation:
+              type: string
+              format: password
+              description: Must exactly match password.
+              example: password123
+    LoginRequest:
+      type: object
+      required:
+      - user
+      properties:
+        user:
+          type: object
+          required:
+          - email
+          - password
+          properties:
+            email:
+              type: string
+              format: email
+              description: Registered account email.
+              example: writer@example.com
+            password:
+              type: string
+              format: password
+              description: Account password.
+              example: password123
+    PersonRequest:
+      type: object
+      required:
+      - person
+      properties:
+        person:
+          type: object
+          required:
+          - first_name
+          - last_name
+          - email
+          properties:
+            first_name:
+              type: string
+              description: Required given name.
+              example: Grace
+            last_name:
+              type: string
+              description: Required family name.
+              example: Hopper
+            email:
+              type: string
+              format: email
+              description: Required valid email.
+              example: grace@example.com
+            phone:
+              type: string
+              nullable: true
+              description: Optional phone number.
+              example: 555-0200
+    UniverseRequest:
+      type: object
+      required:
+      - universe
+      properties:
+        universe:
+          type: object
+          required:
+          - name
+          properties:
+            name:
+              type: string
+              description: Required universe name.
+              example: The Prime Continuity
+            description:
+              type: string
+              nullable: true
+              description: Optional notes about the setting or continuity.
+              example: A shared continuity for cosmic stories.
+    WorldRequest:
+      type: object
+      required:
+      - world
+      properties:
+        world:
+          type: object
+          required:
+          - name
+          - universe_id
+          properties:
+            name:
+              type: string
+              description: Required world name.
+              example: Eldoria
+            description:
+              type: string
+              nullable: true
+              description: Optional lore, culture, or geography notes.
+              example: A moonlit realm of floating cities.
+            universe_id:
+              type: integer
+              description: Required ID of a universe owned by the current user.
+              example: 1
+    CharacterRequest:
+      type: object
+      required:
+      - character
+      properties:
+        character:
+          type: object
+          required:
+          - name
+          - universe_id
+          properties:
+            name:
+              type: string
+              description: Required display name.
+              example: Aster
+            full_name:
+              type: string
+              nullable: true
+              description: Optional formal name.
+              example: Aster Vale Solarin
+            nickname:
+              type: string
+              nullable: true
+              description: Optional alias or nickname.
+              example: The Starborn
+            age:
+              type: string
+              nullable: true
+              description: Use text for extremely large or descriptive ages.
+              example: '1000001'
+            appearance:
+              type: string
+              nullable: true
+              description: Short visual description.
+              example: Silver hair and amber eyes.
+            occupation:
+              type: string
+              nullable: true
+              description: Role, job, class, or social function.
+              example: Chronomancer
+            description:
+              type: string
+              nullable: true
+              description: General notes about the character.
+              example: A guarded scholar with a dry sense of humor.
+            story:
+              type: string
+              nullable: true
+              description: Backstory, plot arc, or biography.
+              example: Born before the first empire.
+            universe_id:
+              type: integer
+              description: Required ID of a universe owned by the current user.
+              example: 1
+            world_id:
+              type: integer
+              nullable: true
+              description: Optional ID of a world in the same universe.
+              example: 1
+            portrait_image:
+              type: string
+              format: binary
+              description: 'Optional image file for the character portrait. Use multipart/form-data.
+                Max 5 MB. Allowed: JPEG, PNG, WebP, GIF.'
+            cover_image:
+              type: string
+              format: binary
+              description: 'Optional image file for the character cover. Use multipart/form-data.
+                Max 15 MB. Allowed: JPEG, PNG, WebP, GIF.'
+    RelationRequest:
+      type: object
+      required:
+      - relation
+      properties:
+        relation:
+          type: object
+          required:
+          - character_id
+          - related_character_id
+          - relation_type
+          properties:
+            character_id:
+              type: integer
+              description: Required source character ID owned by the current user.
+              example: 1
+            related_character_id:
+              type: integer
+              description: Required target character ID owned by the current user.
+              example: 2
+            relation_type:
+              type: string
+              description: Required relationship type.
+              enum:
+              - parent
+              - child
+              - sibling
+              - grandparent
+              - grandchild
+              - ancestor
+              - descendant
+              - spouse
+              - partner
+              - lover
+              - fiance
+              - ex_partner
+              - friend
+              - best_friend
+              - acquaintance
+              - ally
+              - enemy
+              - rival
+              - mentor
+              - student
+              - guardian
+              - ward
+              - adoptive_parent
+              - adoptive_child
+              - step_parent
+              - step_child
+              - uncle_aunt
+              - nephew_niece
+              - cousin
+              - coworker
+              - leader
+              - follower
+              - master
+              - servant
+              - creator
+              - creation
+              - other
+              example: friend
+    ErrorResponse:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            type: string
+          description: Human readable validation, authorization, or lookup errors.
+          example:
+          - Record not found
+    AuthStatus:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: Logged in successfully.
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Internal user ID.
+          example: 1
+        email:
+          type: string
+          format: email
+          description: User email address.
+          example: writer@example.com
+        created_at:
+          type: string
+          description: Creation timestamp.
+          example: 2026-05-27 13:34:33 UTC
+        updated_at:
+          type: string
+          description: Last update timestamp.
+          example: 2026-05-27 13:34:33 UTC
+    Person:
+      type: object
+      required:
+      - id
+      - first_name
+      - last_name
+      - email
+      properties:
+        id:
+          type: integer
+          description: Internal person ID.
+          example: 10
+        first_name:
+          type: string
+          description: Given name.
+          example: Grace
+        last_name:
+          type: string
+          description: Family name.
+          example: Hopper
+        email:
+          type: string
+          format: email
+          description: Contact email address.
+          example: grace@example.com
+        phone:
+          type: string
+          nullable: true
+          description: Optional phone number.
+          example: 555-0200
+        created_at:
+          type: string
+          description: Creation timestamp.
+          example: 2026-05-27 13:34:33 UTC
+        updated_at:
+          type: string
+          description: Last update timestamp.
+          example: 2026-05-27 13:34:33 UTC
+    Universe:
+      type: object
+      required:
+      - id
+      - name
+      properties:
+        id:
+          type: integer
+          description: Internal universe ID.
+          example: 1
+        name:
+          type: string
+          description: Required universe name.
+          example: The Prime Continuity
+        description:
+          type: string
+          nullable: true
+          description: Long-form setting notes.
+          example: A shared continuity for cosmic stories.
+        created_at:
+          type: string
+          description: Creation timestamp.
+          example: 2026-05-27 13:34:33 UTC
+        updated_at:
+          type: string
+          description: Last update timestamp.
+          example: 2026-05-27 13:34:33 UTC
+    World:
+      type: object
+      required:
+      - id
+      - name
+      - universe_id
+      properties:
+        id:
+          type: integer
+          description: Internal world ID.
+          example: 1
+        name:
+          type: string
+          description: Required world name.
+          example: Eldoria
+        description:
+          type: string
+          nullable: true
+          description: World geography, culture, or lore notes.
+          example: A moonlit realm of floating cities.
+        universe_id:
+          type: integer
+          description: ID of the universe this world belongs to.
+          example: 1
+        created_at:
+          type: string
+          description: Creation timestamp.
+          example: 2026-05-27 13:34:33 UTC
+        updated_at:
+          type: string
+          description: Last update timestamp.
+          example: 2026-05-27 13:34:33 UTC
+    Attachment:
+      type: object
+      nullable: true
+      properties:
+        filename:
+          type: string
+          description: Uploaded file name.
+          example: portrait.png
+        content_type:
+          type: string
+          description: 'MIME type. Allowed: image/jpeg, image/png, image/webp, image/gif.'
+          example: image/png
+        byte_size:
+          type: integer
+          description: File size in bytes.
+          example: 124000
+        url:
+          type: string
+          description: Relative Active Storage blob URL.
+          example: "/rails/active_storage/blobs/redirect/..."
+    Character:
+      type: object
+      required:
+      - id
+      - name
+      - universe_id
+      properties:
+        id:
+          type: integer
+          description: Internal character ID.
+          example: 1
+        name:
+          type: string
+          description: Required display name.
+          example: Aster
+        full_name:
+          type: string
+          nullable: true
+          description: Complete formal name.
+          example: Aster Vale Solarin
+        nickname:
+          type: string
+          nullable: true
+          description: Nickname, alias, or short title.
+          example: The Starborn
+        age:
+          type: string
+          nullable: true
+          description: Stored as text so very large or descriptive ages fit.
+          example: '1000001'
+        appearance:
+          type: string
+          nullable: true
+          description: Short visual description.
+          example: Silver hair, amber eyes, ceremonial armor.
+        occupation:
+          type: string
+          nullable: true
+          description: Role, job, class, or social function.
+          example: Chronomancer
+        description:
+          type: string
+          nullable: true
+          description: General character notes.
+          example: A guarded scholar with a dry sense of humor.
+        story:
+          type: string
+          nullable: true
+          description: Backstory or narrative arc.
+          example: Born before the first empire, Aster remembers every version of
+            history.
+        universe_id:
+          type: integer
+          description: ID of the universe this character belongs to.
+          example: 1
+        world_id:
+          type: integer
+          nullable: true
+          description: Optional ID of a world in the same universe.
+          example: 1
+        portrait_image:
+          "$ref": "#/components/schemas/Attachment"
+        cover_image:
+          "$ref": "#/components/schemas/Attachment"
+        relations:
+          type: array
+          description: Outgoing relations from this character to other characters.
+          items:
+            "$ref": "#/components/schemas/Relation"
+        created_at:
+          type: string
+          description: Creation timestamp.
+          example: 2026-05-27 13:34:33 UTC
+        updated_at:
+          type: string
+          description: Last update timestamp.
+          example: 2026-05-27 13:34:33 UTC
+    Relation:
+      type: object
+      required:
+      - id
+      - character_id
+      - related_character_id
+      - relation_type
+      properties:
+        id:
+          type: integer
+          description: Internal relation ID.
+          example: 1
+        character_id:
+          type: integer
+          description: Source character ID.
+          example: 1
+        related_character_id:
+          type: integer
+          description: Target character ID.
+          example: 2
+        relation_type:
+          type: string
+          description: Relationship type between the source and target character.
+          enum:
+          - parent
+          - child
+          - sibling
+          - grandparent
+          - grandchild
+          - ancestor
+          - descendant
+          - spouse
+          - partner
+          - lover
+          - fiance
+          - ex_partner
+          - friend
+          - best_friend
+          - acquaintance
+          - ally
+          - enemy
+          - rival
+          - mentor
+          - student
+          - guardian
+          - ward
+          - adoptive_parent
+          - adoptive_child
+          - step_parent
+          - step_child
+          - uncle_aunt
+          - nephew_niece
+          - cousin
+          - coworker
+          - leader
+          - follower
+          - master
+          - servant
+          - creator
+          - creation
+          - other
+          example: friend
+        created_at:
+          type: string
+          description: Creation timestamp.
+          example: 2026-05-27 13:34:33 UTC
+        updated_at:
+          type: string
+          description: Last update timestamp.
+          example: 2026-05-27 13:34:33 UTC
+paths:
+  "/api/v1/auth/signup":
+    post:
+      summary: Create an account
+      tags:
+      - Auth
+      description: Registers a new user. The email must be unique and the password
+        must be 10 to 128 characters.
+      parameters: []
+      responses:
+        '200':
+          description: user created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    "$ref": "#/components/schemas/AuthStatus"
+                  data:
+                    "$ref": "#/components/schemas/User"
+        '422':
+          description: invalid signup data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    "$ref": "#/components/schemas/AuthStatus"
+                  errors:
+                    type: array
+                    items:
+                      type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/SignupRequest"
+  "/api/v1/auth/login":
+    post:
+      summary: Log in
+      tags:
+      - Auth
+      description: Authenticates a user and returns a JWT token. Use the token in
+        the Authorization header for protected endpoints.
+      parameters: []
+      responses:
+        '200':
+          description: logged in
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    "$ref": "#/components/schemas/AuthStatus"
+                  data:
+                    "$ref": "#/components/schemas/User"
+                  token:
+                    type: string
+                    description: JWT bearer token.
+        '401':
+          description: invalid credentials
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    "$ref": "#/components/schemas/AuthStatus"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/LoginRequest"
+  "/api/v1/auth/logout":
+    delete:
+      summary: Log out
+      tags:
+      - Auth
+      security:
+      - bearerAuth: []
+      description: Requires a bearer token and returns a confirmation message.
+      responses:
+        '200':
+          description: logged out
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    "$ref": "#/components/schemas/AuthStatus"
+  "/api/v1/people":
+    get:
+      summary: List people
+      tags:
+      - People
+      security:
+      - bearerAuth: []
+      description: Lists people owned by the authenticated user.
+      responses:
+        '200':
+          description: people listed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Person"
+    post:
+      summary: Create a person
+      tags:
+      - People
+      security:
+      - bearerAuth: []
+      description: Creates a person for the authenticated user.
+      parameters: []
+      responses:
+        '201':
+          description: person created
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Person"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/PersonRequest"
+  "/api/v1/people/{id}":
+    parameters:
+    - name: id
+      in: path
+      description: Person ID.
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Show a person
+      tags:
+      - People
+      security:
+      - bearerAuth: []
+      description: Returns one person owned by the authenticated user.
+      responses:
+        '200':
+          description: person found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Person"
+    patch:
+      summary: Update a person
+      tags:
+      - People
+      security:
+      - bearerAuth: []
+      description: Updates any supplied person fields.
+      parameters: []
+      responses:
+        '200':
+          description: person updated
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Person"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/PersonRequest"
+    delete:
+      summary: Delete a person
+      tags:
+      - People
+      security:
+      - bearerAuth: []
+      description: Deletes a person owned by the authenticated user.
+      responses:
+        '204':
+          description: person deleted
+  "/api/v1/universes":
+    get:
+      summary: List universes
+      tags:
+      - Universes
+      security:
+      - bearerAuth: []
+      description: Lists universes owned by the authenticated user.
+      responses:
+        '200':
+          description: universes listed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Universe"
+    post:
+      summary: Create a universe
+      tags:
+      - Universes
+      security:
+      - bearerAuth: []
+      description: Creates a universe. Only name is required.
+      parameters: []
+      responses:
+        '201':
+          description: universe created
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Universe"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/UniverseRequest"
+  "/api/v1/universes/{id}":
+    parameters:
+    - name: id
+      in: path
+      description: Universe ID.
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Show a universe
+      tags:
+      - Universes
+      security:
+      - bearerAuth: []
+      description: Returns one universe owned by the authenticated user.
+      responses:
+        '200':
+          description: universe found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Universe"
+    patch:
+      summary: Update a universe
+      tags:
+      - Universes
+      security:
+      - bearerAuth: []
+      description: Updates the universe name and/or description.
+      parameters: []
+      responses:
+        '200':
+          description: universe updated
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Universe"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/UniverseRequest"
+    delete:
+      summary: Delete a universe
+      tags:
+      - Universes
+      security:
+      - bearerAuth: []
+      description: Deletes a universe and its dependent worlds and characters.
+      responses:
+        '204':
+          description: universe deleted
+  "/api/v1/worlds":
+    get:
+      summary: List worlds
+      tags:
+      - Worlds
+      security:
+      - bearerAuth: []
+      description: Lists worlds across the authenticated user universes.
+      responses:
+        '200':
+          description: worlds listed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/World"
+    post:
+      summary: Create a world
+      tags:
+      - Worlds
+      security:
+      - bearerAuth: []
+      description: Creates a world inside an existing universe owned by the authenticated
+        user.
+      parameters: []
+      responses:
+        '201':
+          description: world created
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/World"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/WorldRequest"
+  "/api/v1/worlds/{id}":
+    parameters:
+    - name: id
+      in: path
+      description: World ID.
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Show a world
+      tags:
+      - Worlds
+      security:
+      - bearerAuth: []
+      description: Returns one world owned through the authenticated user universe.
+      responses:
+        '200':
+          description: world found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/World"
+    patch:
+      summary: Update a world
+      tags:
+      - Worlds
+      security:
+      - bearerAuth: []
+      description: Updates world fields. universe_id may move the world to another
+        universe owned by the user.
+      parameters: []
+      responses:
+        '200':
+          description: world updated
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/World"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/WorldRequest"
+    delete:
+      summary: Delete a world
+      tags:
+      - Worlds
+      security:
+      - bearerAuth: []
+      description: Deletes a world. Existing characters are kept and their world_id
+        is cleared.
+      responses:
+        '204':
+          description: world deleted
+  "/api/v1/characters":
+    get:
+      summary: List characters
+      tags:
+      - Characters
+      security:
+      - bearerAuth: []
+      description: Lists characters across the authenticated user universes, including
+        attachment metadata and outgoing relations.
+      responses:
+        '200':
+          description: characters listed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Character"
+    post:
+      summary: Create a character
+      tags:
+      - Characters
+      security:
+      - bearerAuth: []
+      description: Creates a character. Send JSON for text fields, or multipart/form-data
+        when uploading portrait_image and/or cover_image.
+      parameters: []
+      responses:
+        '201':
+          description: character created
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Character"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CharacterRequest"
+          multipart/form-data:
+            schema:
+              "$ref": "#/components/schemas/CharacterRequest"
+  "/api/v1/characters/{id}":
+    parameters:
+    - name: id
+      in: path
+      description: Character ID.
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Show a character
+      tags:
+      - Characters
+      security:
+      - bearerAuth: []
+      description: Returns one character owned through the authenticated user universe.
+      responses:
+        '200':
+          description: character found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Character"
+    patch:
+      summary: Update a character
+      tags:
+      - Characters
+      security:
+      - bearerAuth: []
+      description: Updates character fields. Use multipart/form-data to replace portrait_image
+        or cover_image.
+      parameters: []
+      responses:
+        '200':
+          description: character updated
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Character"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CharacterRequest"
+          multipart/form-data:
+            schema:
+              "$ref": "#/components/schemas/CharacterRequest"
+    delete:
+      summary: Delete a character
+      tags:
+      - Characters
+      security:
+      - bearerAuth: []
+      description: Deletes a character and its relation records.
+      responses:
+        '204':
+          description: character deleted
+  "/api/v1/relations":
+    get:
+      summary: List relations
+      tags:
+      - Relations
+      security:
+      - bearerAuth: []
+      description: Lists outgoing character relation records owned by the authenticated
+        user.
+      responses:
+        '200':
+          description: relations listed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Relation"
+    post:
+      summary: Create a relation
+      tags:
+      - Relations
+      security:
+      - bearerAuth: []
+      description: Creates a directed relation from one character to another character
+        owned by the same user.
+      parameters: []
+      responses:
+        '201':
+          description: relation created
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Relation"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/RelationRequest"
+  "/api/v1/relations/{id}":
+    parameters:
+    - name: id
+      in: path
+      description: Relation ID.
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Show a relation
+      tags:
+      - Relations
+      security:
+      - bearerAuth: []
+      description: Returns one relation owned through the source character universe.
+      responses:
+        '200':
+          description: relation found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Relation"
+    patch:
+      summary: Update a relation
+      tags:
+      - Relations
+      security:
+      - bearerAuth: []
+      description: Updates relation_type and/or the source or target character.
+      parameters: []
+      responses:
+        '200':
+          description: relation updated
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Relation"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/RelationRequest"
+    delete:
+      summary: Delete a relation
+      tags:
+      - Relations
+      security:
+      - bearerAuth: []
+      description: Deletes a relation record.
+      responses:
+        '204':
+          description: relation deleted

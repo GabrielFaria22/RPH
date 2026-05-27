@@ -11,7 +11,7 @@ if [ -f tmp/pids/server.pid ]; then
 fi
 
 echo "→ Waiting for PostgreSQL to be ready..."
-until pg_isready -h db -U rails_user -d crud_api_development -q; do
+until pg_isready -h db -U rails_user -d rph_development -q; do
   echo "  PostgreSQL not ready, waiting 2 seconds..."
   sleep 2
 done

@@ -80,6 +80,8 @@ GEM
       mutex_m
       securerandom (>= 0.3)
       tzinfo (~> 2.0)
+    addressable (2.9.0)
+      public_suffix (>= 2.0.2, < 8.0)
     annotate (3.2.0)
       activerecord (>= 3.2, < 8.0)
       rake (>= 10.4, < 14.0)
@@ -142,6 +144,9 @@ GEM
       pp (>= 0.6.0)
       rdoc (>= 4.0.0)
       reline (>= 0.4.2)
+    json-schema (6.2.0)
+      addressable (~> 2.8)
+      bigdecimal (>= 3.1, < 5)
     jwt (3.1.2)
       base64
     logger (1.7.0)
@@ -185,6 +190,7 @@ GEM
     psych (5.3.1)
       date
       stringio
+    public_suffix (7.0.5)
     puma (6.6.1)
       nio4r (~> 2.0)
     racc (1.8.1)
@@ -260,6 +266,17 @@ GEM
       rspec-mocks (~> 3.13)
       rspec-support (~> 3.13)
     rspec-support (3.13.7)
+    rswag-api (2.17.0)
+      activesupport (>= 5.2, < 8.2)
+      railties (>= 5.2, < 8.2)
+    rswag-specs (2.17.0)
+      activesupport (>= 5.2, < 8.2)
+      json-schema (>= 2.2, < 7.0)
+      railties (>= 5.2, < 8.2)
+      rspec-core (>= 2.14)
+    rswag-ui (2.17.0)
+      actionpack (>= 5.2, < 8.2)
+      railties (>= 5.2, < 8.2)
     securerandom (0.4.1)
     sidekiq (7.3.9)
       base64
@@ -306,6 +323,9 @@ DEPENDENCIES
   rails (~> 7.1.6)
   redis (~> 5.0)
   rspec-rails (~> 6.1)
+  rswag-api (~> 2.16)
+  rswag-specs (~> 2.16)
+  rswag-ui (~> 2.16)
   sidekiq (~> 7.2)
   tzinfo-data
 
