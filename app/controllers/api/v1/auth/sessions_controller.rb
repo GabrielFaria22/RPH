@@ -3,6 +3,7 @@ module Api
     module Auth
       class SessionsController < Devise::SessionsController
         respond_to :json
+        before_action :authenticate_user!, only: :destroy
 
         def create
           user = User.find_by(email: sign_in_params[:email])
@@ -26,15 +27,9 @@ module Api
         end
 
         def destroy
-          if request.headers['Authorization'].present?
-            render json: {
-              status: { code: 200, message: 'Logged out successfully.' }
-            }, status: :ok
-          else
-            render json: {
-              status: { code: 401, message: "Couldn't find an active session." }
-            }, status: :unauthorized
-          end
+          render json: {
+            status: { code: 200, message: 'Logged out successfully.' }
+          }, status: :ok
         end
 
         private

@@ -1,9 +1,9 @@
 FactoryBot.define do
   factory :person do
-    first_name { "MyString" }
-    last_name { "MyString" }
-    email { "MyString" }
-    phone { "MyString" }
-    user { nil }
+    first_name { "Ada" }
+    last_name { "Lovelace" }
+    sequence(:email) { |number| "person#{number}@example.com" }
+    phone { "555-0100" }
+    user
   end
 end
