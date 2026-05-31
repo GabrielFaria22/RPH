@@ -4,5 +4,10 @@ FactoryBot.define do
     password { "password123" }
     password_confirmation { "password123" }
     jti { SecureRandom.uuid }
+    profile_type { :regular }
+
+    trait :admin do
+      profile_type { :admin }
+    end
   end
 end

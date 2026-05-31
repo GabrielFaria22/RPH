@@ -38,6 +38,7 @@ class Relation < ApplicationRecord
     servant: 'servant',
     creator: 'creator',
     creation: 'creation',
+    alternate_version: 'alternate_version',
     other: 'other'
   }.freeze
 

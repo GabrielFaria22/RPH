@@ -9,6 +9,7 @@ class CreateCharacters < ActiveRecord::Migration[7.1]
       t.string :occupation
       t.text :description
       t.text :story
+      t.boolean :public, null: false, default: false
       t.references :universe, null: false, foreign_key: true
       t.references :world, foreign_key: true
 
@@ -17,5 +18,6 @@ class CreateCharacters < ActiveRecord::Migration[7.1]
 
     add_index :characters, [:universe_id, :name]
     add_index :characters, [:world_id, :name]
+    add_index :characters, :public
   end
 end

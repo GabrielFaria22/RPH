@@ -8,6 +8,7 @@ FactoryBot.define do
     occupation { "Adventurer" }
     description { "Short description." }
     story { "Longer story." }
+    public { false }
     universe
   end
 end

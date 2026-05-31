@@ -7,6 +7,9 @@ RSpec.describe 'Api::V1::People', type: :request do
   let(:other_user) { create(:user) }
   let(:token) { Warden::JWTAuth::UserEncoder.new.call(user, :user, nil).first }
   let(:headers) { { 'Authorization' => "Bearer #{token}" } }
+  let(:admin) { create(:user, :admin) }
+  let(:admin_token) { Warden::JWTAuth::UserEncoder.new.call(admin, :user, nil).first }
+  let(:admin_headers) { { 'Authorization' => "Bearer #{admin_token}" } }
 
   describe 'GET /api/v1/people' do
     it 'requires authentication' do
@@ -24,6 +27,17 @@ RSpec.describe 'Api::V1::People', type: :request do
       response_ids = JSON.parse(response.body).map { |person| person['id'] }
       expect(response).to have_http_status(:ok)
       expect(response_ids).to contain_exactly(own_person.id)
+    end
+
+    it 'lets admins list all people' do
+      own_person = create(:person, user: user)
+      other_person = create(:person, user: other_user)
+
+      get '/api/v1/people', headers: admin_headers
+
+      response_ids = JSON.parse(response.body).map { |person| person['id'] }
+      expect(response).to have_http_status(:ok)
+      expect(response_ids).to include(own_person.id, other_person.id)
     end
   end
 
@@ -63,6 +77,17 @@ RSpec.describe 'Api::V1::People', type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(person.reload.first_name).to eq('Updated')
+    end
+
+    it 'lets admins update another user person' do
+      person = create(:person, user: other_user)
+
+      patch "/api/v1/people/#{person.id}", params: {
+        person: { first_name: 'Admin Updated' }
+      }, headers: admin_headers
+
+      expect(response).to have_http_status(:ok)
+      expect(person.reload.first_name).to eq('Admin Updated')
     end
   end
 

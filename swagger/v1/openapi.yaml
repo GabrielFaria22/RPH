@@ -113,6 +113,29 @@ components:
               nullable: true
               description: Optional notes about the setting or continuity.
               example: A shared continuity for cosmic stories.
+            public:
+              type: boolean
+              description: Whether other users can discover and read this universe.
+                Defaults to false/private.
+              example: false
+            portrait_image:
+              type: string
+              format: binary
+              description: 'Optional vertical portrait image. Use multipart/form-data.
+                Max 5 MB. Allowed: JPEG, PNG, WebP, GIF.'
+            cover_image:
+              type: string
+              format: binary
+              description: 'Optional horizontal cover image. Use multipart/form-data.
+                Max 20 MB. Allowed: JPEG, PNG, WebP, GIF.'
+            misc_images:
+              type: array
+              maxItems: 8
+              description: 'Optional misc image gallery. Use multipart/form-data.
+                Each image max 5 MB. Allowed: JPEG, PNG, WebP, GIF.'
+              items:
+                type: string
+                format: binary
     WorldRequest:
       type: object
       required:
@@ -133,10 +156,33 @@ components:
               nullable: true
               description: Optional lore, culture, or geography notes.
               example: A moonlit realm of floating cities.
+            public:
+              type: boolean
+              description: Whether other users can discover and read this world. Defaults
+                to false/private.
+              example: false
             universe_id:
               type: integer
               description: Required ID of a universe owned by the current user.
               example: 1
+            portrait_image:
+              type: string
+              format: binary
+              description: 'Optional vertical portrait image. Use multipart/form-data.
+                Max 5 MB. Allowed: JPEG, PNG, WebP, GIF.'
+            cover_image:
+              type: string
+              format: binary
+              description: 'Optional horizontal cover image. Use multipart/form-data.
+                Max 20 MB. Allowed: JPEG, PNG, WebP, GIF.'
+            misc_images:
+              type: array
+              maxItems: 8
+              description: 'Optional misc image gallery. Use multipart/form-data.
+                Each image max 5 MB. Allowed: JPEG, PNG, WebP, GIF.'
+              items:
+                type: string
+                format: binary
     CharacterRequest:
       type: object
       required:
@@ -187,6 +233,11 @@ components:
               nullable: true
               description: Backstory, plot arc, or biography.
               example: Born before the first empire.
+            public:
+              type: boolean
+              description: Whether other users can discover and read this character.
+                Defaults to false/private.
+              example: false
             universe_id:
               type: integer
               description: Required ID of a universe owned by the current user.
@@ -199,13 +250,21 @@ components:
             portrait_image:
               type: string
               format: binary
-              description: 'Optional image file for the character portrait. Use multipart/form-data.
+              description: 'Optional vertical portrait image. Use multipart/form-data.
                 Max 5 MB. Allowed: JPEG, PNG, WebP, GIF.'
             cover_image:
               type: string
               format: binary
-              description: 'Optional image file for the character cover. Use multipart/form-data.
-                Max 15 MB. Allowed: JPEG, PNG, WebP, GIF.'
+              description: 'Optional horizontal cover image. Use multipart/form-data.
+                Max 20 MB. Allowed: JPEG, PNG, WebP, GIF.'
+            misc_images:
+              type: array
+              maxItems: 8
+              description: 'Optional misc image gallery. Use multipart/form-data.
+                Each image max 5 MB. Allowed: JPEG, PNG, WebP, GIF.'
+              items:
+                type: string
+                format: binary
     RelationRequest:
       type: object
       required:
@@ -299,6 +358,13 @@ components:
           format: email
           description: User email address.
           example: writer@example.com
+        profile_type:
+          type: string
+          enum:
+          - regular
+          - admin
+          description: User profile type. Admin users may edit/delete any resource.
+          example: regular
         created_at:
           type: string
           description: Creation timestamp.
@@ -364,6 +430,30 @@ components:
           nullable: true
           description: Long-form setting notes.
           example: A shared continuity for cosmic stories.
+        public:
+          type: boolean
+          description: Whether other users can discover and read this universe.
+          example: false
+        owned_by_current_user:
+          type: boolean
+          description: True when the authenticated user owns this universe and may
+            edit/delete it.
+          example: true
+        editable_by_current_user:
+          type: boolean
+          description: True when the authenticated user can edit/delete this universe.
+            True for owners and admins.
+          example: true
+        portrait_image:
+          "$ref": "#/components/schemas/Attachment"
+        cover_image:
+          "$ref": "#/components/schemas/Attachment"
+        misc_images:
+          type: array
+          description: Up to 8 misc images attached to this universe.
+          maxItems: 8
+          items:
+            "$ref": "#/components/schemas/Attachment"
         created_at:
           type: string
           description: Creation timestamp.
@@ -392,10 +482,34 @@ components:
           nullable: true
           description: World geography, culture, or lore notes.
           example: A moonlit realm of floating cities.
+        public:
+          type: boolean
+          description: Whether other users can discover and read this world.
+          example: false
+        owned_by_current_user:
+          type: boolean
+          description: True when the authenticated user owns this world and may edit/delete
+            it.
+          example: true
+        editable_by_current_user:
+          type: boolean
+          description: True when the authenticated user can edit/delete this world.
+            True for owners and admins.
+          example: true
         universe_id:
           type: integer
           description: ID of the universe this world belongs to.
           example: 1
+        portrait_image:
+          "$ref": "#/components/schemas/Attachment"
+        cover_image:
+          "$ref": "#/components/schemas/Attachment"
+        misc_images:
+          type: array
+          description: Up to 8 misc images attached to this world.
+          maxItems: 8
+          items:
+            "$ref": "#/components/schemas/Attachment"
         created_at:
           type: string
           description: Creation timestamp.
@@ -475,6 +589,20 @@ components:
           description: Backstory or narrative arc.
           example: Born before the first empire, Aster remembers every version of
             history.
+        public:
+          type: boolean
+          description: Whether other users can discover and read this character.
+          example: false
+        owned_by_current_user:
+          type: boolean
+          description: True when the authenticated user owns this character and may
+            edit/delete it.
+          example: true
+        editable_by_current_user:
+          type: boolean
+          description: True when the authenticated user can edit/delete this character.
+            True for owners and admins.
+          example: true
         universe_id:
           type: integer
           description: ID of the universe this character belongs to.
@@ -488,6 +616,12 @@ components:
           "$ref": "#/components/schemas/Attachment"
         cover_image:
           "$ref": "#/components/schemas/Attachment"
+        misc_images:
+          type: array
+          description: Up to 8 misc images attached to this character.
+          maxItems: 8
+          items:
+            "$ref": "#/components/schemas/Attachment"
         relations:
           type: array
           description: Outgoing relations from this character to other characters.
@@ -761,7 +895,16 @@ paths:
       - Universes
       security:
       - bearerAuth: []
-      description: Lists universes owned by the authenticated user.
+      description: 'Lists universes visible to the authenticated user: all of their
+        own universes plus public universes from other users. Private universes from
+        other users are excluded. Use q to search by name.'
+      parameters:
+      - name: q
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Optional case-insensitive name search.
       responses:
         '200':
           description: universes listed
@@ -777,7 +920,8 @@ paths:
       - Universes
       security:
       - bearerAuth: []
-      description: Creates a universe. Only name is required.
+      description: Creates a universe. Only name is required. Send multipart/form-data
+        when uploading portrait_image, cover_image, or misc_images.
       parameters: []
       responses:
         '201':
@@ -791,6 +935,34 @@ paths:
           application/json:
             schema:
               "$ref": "#/components/schemas/UniverseRequest"
+          multipart/form-data:
+            schema:
+              "$ref": "#/components/schemas/UniverseRequest"
+  "/api/v1/universes/mine":
+    get:
+      summary: List mine universes
+      tags:
+      - Universes
+      security:
+      - bearerAuth: []
+      description: Lists only universes created by the authenticated user. Use q to
+        search your universe names.
+      parameters:
+      - name: q
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Optional case-insensitive name search.
+      responses:
+        '200':
+          description: mine universes listed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Universe"
   "/api/v1/universes/{id}":
     parameters:
     - name: id
@@ -805,7 +977,8 @@ paths:
       - Universes
       security:
       - bearerAuth: []
-      description: Returns one universe owned by the authenticated user.
+      description: Returns one universe if it is owned by the authenticated user or
+        marked public.
       responses:
         '200':
           description: universe found
@@ -819,7 +992,8 @@ paths:
       - Universes
       security:
       - bearerAuth: []
-      description: Updates the universe name and/or description.
+      description: Updates universe fields. Use multipart/form-data to replace portrait_image,
+        cover_image, or misc_images.
       parameters: []
       responses:
         '200':
@@ -831,6 +1005,9 @@ paths:
       requestBody:
         content:
           application/json:
+            schema:
+              "$ref": "#/components/schemas/UniverseRequest"
+          multipart/form-data:
             schema:
               "$ref": "#/components/schemas/UniverseRequest"
     delete:
@@ -850,7 +1027,16 @@ paths:
       - Worlds
       security:
       - bearerAuth: []
-      description: Lists worlds across the authenticated user universes.
+      description: 'Lists worlds visible to the authenticated user: worlds in their
+        own universes plus public worlds from other users. Private worlds from other
+        users are excluded. Use q to search by name.'
+      parameters:
+      - name: q
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Optional case-insensitive name search.
       responses:
         '200':
           description: worlds listed
@@ -867,7 +1053,8 @@ paths:
       security:
       - bearerAuth: []
       description: Creates a world inside an existing universe owned by the authenticated
-        user.
+        user. Send multipart/form-data when uploading portrait_image, cover_image,
+        or misc_images.
       parameters: []
       responses:
         '201':
@@ -881,6 +1068,34 @@ paths:
           application/json:
             schema:
               "$ref": "#/components/schemas/WorldRequest"
+          multipart/form-data:
+            schema:
+              "$ref": "#/components/schemas/WorldRequest"
+  "/api/v1/worlds/mine":
+    get:
+      summary: List mine worlds
+      tags:
+      - Worlds
+      security:
+      - bearerAuth: []
+      description: Lists only worlds created inside universes owned by the authenticated
+        user. Use q to search your world names.
+      parameters:
+      - name: q
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Optional case-insensitive name search.
+      responses:
+        '200':
+          description: mine worlds listed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/World"
   "/api/v1/worlds/{id}":
     parameters:
     - name: id
@@ -895,7 +1110,8 @@ paths:
       - Worlds
       security:
       - bearerAuth: []
-      description: Returns one world owned through the authenticated user universe.
+      description: Returns one world if it belongs to the authenticated user or is
+        marked public.
       responses:
         '200':
           description: world found
@@ -910,7 +1126,8 @@ paths:
       security:
       - bearerAuth: []
       description: Updates world fields. universe_id may move the world to another
-        universe owned by the user.
+        universe owned by the user. Use multipart/form-data to replace portrait_image,
+        cover_image, or misc_images.
       parameters: []
       responses:
         '200':
@@ -922,6 +1139,9 @@ paths:
       requestBody:
         content:
           application/json:
+            schema:
+              "$ref": "#/components/schemas/WorldRequest"
+          multipart/form-data:
             schema:
               "$ref": "#/components/schemas/WorldRequest"
     delete:
@@ -942,8 +1162,17 @@ paths:
       - Characters
       security:
       - bearerAuth: []
-      description: Lists characters across the authenticated user universes, including
-        attachment metadata and outgoing relations.
+      description: 'Lists characters visible to the authenticated user: characters
+        in their own universes plus public characters from other users. Private characters
+        from other users are excluded. Includes attachment metadata and outgoing relations.
+        Use q to search by name.'
+      parameters:
+      - name: q
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Optional case-insensitive name search.
       responses:
         '200':
           description: characters listed
@@ -960,7 +1189,7 @@ paths:
       security:
       - bearerAuth: []
       description: Creates a character. Send JSON for text fields, or multipart/form-data
-        when uploading portrait_image and/or cover_image.
+        when uploading portrait_image, cover_image, or misc_images.
       parameters: []
       responses:
         '201':
@@ -977,6 +1206,31 @@ paths:
           multipart/form-data:
             schema:
               "$ref": "#/components/schemas/CharacterRequest"
+  "/api/v1/characters/mine":
+    get:
+      summary: List mine characters
+      tags:
+      - Characters
+      security:
+      - bearerAuth: []
+      description: Lists only characters created inside universes owned by the authenticated
+        user. Use q to search your character names.
+      parameters:
+      - name: q
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Optional case-insensitive name search.
+      responses:
+        '200':
+          description: mine characters listed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Character"
   "/api/v1/characters/{id}":
     parameters:
     - name: id
@@ -991,7 +1245,8 @@ paths:
       - Characters
       security:
       - bearerAuth: []
-      description: Returns one character owned through the authenticated user universe.
+      description: Returns one character if it belongs to the authenticated user or
+        is marked public.
       responses:
         '200':
           description: character found
@@ -1005,8 +1260,8 @@ paths:
       - Characters
       security:
       - bearerAuth: []
-      description: Updates character fields. Use multipart/form-data to replace portrait_image
-        or cover_image.
+      description: Updates character fields. Use multipart/form-data to replace portrait_image,
+        cover_image, or misc_images.
       parameters: []
       responses:
         '200':

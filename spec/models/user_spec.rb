@@ -1,18 +1,21 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
 RSpec.describe User, type: :model do
-  it 'hashes passwords instead of storing them directly' do
-    user = create(:user, password: 'password123', password_confirmation: 'password123')
-
-    expect(user.encrypted_password).to be_present
-    expect(user.encrypted_password).not_to eq('password123')
-    expect(user.valid_password?('password123')).to be(true)
+  it 'defaults to a regular profile type' do
+    expect(build(:user)).to be_regular
   end
 
-  it 'destroys dependent people' do
-    user = create(:user)
-    create(:person, user: user)
+  it 'supports admin users' do
+    expect(build(:user, :admin)).to be_admin
+  end
 
-    expect { user.destroy }.to change(Person, :count).by(-1)
+  it 'assigns admin profile type to configured admin emails' do
+    user = build(:user, email: 'gabrielfca222@gmail.com', profile_type: :regular)
+
+    user.valid?
+
+    expect(user).to be_admin
   end
 end

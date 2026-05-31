@@ -10,6 +10,10 @@ module Api
       def record_not_found
         render json: { errors: ['Record not found'] }, status: :not_found
       end
+
+      def forbidden
+        render json: { errors: ['Forbidden'] }, status: :forbidden
+      end
     end
   end
 end

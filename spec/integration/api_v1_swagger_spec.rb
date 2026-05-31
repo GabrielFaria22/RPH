@@ -207,11 +207,13 @@ RSpec.describe 'API V1', type: :request do
       tags 'Universes'
       security [bearerAuth: []]
       produces 'application/json'
-      description 'Lists universes owned by the authenticated user.'
+      description 'Lists universes visible to the authenticated user: all of their own universes plus public universes from other users. Private universes from other users are excluded. Use q to search by name.'
+      parameter name: :q, in: :query, required: false, schema: { type: :string }, description: 'Optional case-insensitive name search.'
 
       response '200', 'universes listed' do
         schema type: :array, items: { '$ref' => '#/components/schemas/Universe' }
 
+        let(:q) { nil }
         before { create(:universe, user: user) }
 
         run_test!
@@ -221,15 +223,34 @@ RSpec.describe 'API V1', type: :request do
     post 'Create a universe' do
       tags 'Universes'
       security [bearerAuth: []]
-      consumes 'application/json'
+      consumes 'application/json', 'multipart/form-data'
       produces 'application/json'
-      description 'Creates a universe. Only name is required.'
+      description 'Creates a universe. Only name is required. Send multipart/form-data when uploading portrait_image, cover_image, or misc_images.'
       parameter name: :payload, in: :body, schema: { '$ref' => '#/components/schemas/UniverseRequest' }
 
       response '201', 'universe created' do
         schema '$ref' => '#/components/schemas/Universe'
 
-        let(:payload) { { universe: { name: 'Prime Continuity', description: 'Main continuity.' } } }
+        let(:payload) { { universe: { name: 'Prime Continuity', description: 'Main continuity.', public: false } } }
+
+        run_test!
+      end
+    end
+  end
+
+  path '/api/v1/universes/mine' do
+    get 'List mine universes' do
+      tags 'Universes'
+      security [bearerAuth: []]
+      produces 'application/json'
+      description 'Lists only universes created by the authenticated user. Use q to search your universe names.'
+      parameter name: :q, in: :query, required: false, schema: { type: :string }, description: 'Optional case-insensitive name search.'
+
+      response '200', 'mine universes listed' do
+        schema type: :array, items: { '$ref' => '#/components/schemas/Universe' }
+
+        let(:q) { nil }
+        before { create(:universe, user: user) }
 
         run_test!
       end
@@ -243,7 +264,7 @@ RSpec.describe 'API V1', type: :request do
       tags 'Universes'
       security [bearerAuth: []]
       produces 'application/json'
-      description 'Returns one universe owned by the authenticated user.'
+      description 'Returns one universe if it is owned by the authenticated user or marked public.'
 
       response '200', 'universe found' do
         schema '$ref' => '#/components/schemas/Universe'
@@ -257,9 +278,9 @@ RSpec.describe 'API V1', type: :request do
     patch 'Update a universe' do
       tags 'Universes'
       security [bearerAuth: []]
-      consumes 'application/json'
+      consumes 'application/json', 'multipart/form-data'
       produces 'application/json'
-      description 'Updates the universe name and/or description.'
+      description 'Updates universe fields. Use multipart/form-data to replace portrait_image, cover_image, or misc_images.'
       parameter name: :payload, in: :body, schema: { '$ref' => '#/components/schemas/UniverseRequest' }
 
       response '200', 'universe updated' do
@@ -290,11 +311,13 @@ RSpec.describe 'API V1', type: :request do
       tags 'Worlds'
       security [bearerAuth: []]
       produces 'application/json'
-      description 'Lists worlds across the authenticated user universes.'
+      description 'Lists worlds visible to the authenticated user: worlds in their own universes plus public worlds from other users. Private worlds from other users are excluded. Use q to search by name.'
+      parameter name: :q, in: :query, required: false, schema: { type: :string }, description: 'Optional case-insensitive name search.'
 
       response '200', 'worlds listed' do
         schema type: :array, items: { '$ref' => '#/components/schemas/World' }
 
+        let(:q) { nil }
         before { create(:world, universe: create(:universe, user: user)) }
 
         run_test!
@@ -304,16 +327,35 @@ RSpec.describe 'API V1', type: :request do
     post 'Create a world' do
       tags 'Worlds'
       security [bearerAuth: []]
-      consumes 'application/json'
+      consumes 'application/json', 'multipart/form-data'
       produces 'application/json'
-      description 'Creates a world inside an existing universe owned by the authenticated user.'
+      description 'Creates a world inside an existing universe owned by the authenticated user. Send multipart/form-data when uploading portrait_image, cover_image, or misc_images.'
       parameter name: :payload, in: :body, schema: { '$ref' => '#/components/schemas/WorldRequest' }
 
       response '201', 'world created' do
         schema '$ref' => '#/components/schemas/World'
 
         let(:universe) { create(:universe, user: user) }
-        let(:payload) { { world: { name: 'Eldoria', description: 'Floating cities.', universe_id: universe.id } } }
+        let(:payload) { { world: { name: 'Eldoria', description: 'Floating cities.', public: false, universe_id: universe.id } } }
+
+        run_test!
+      end
+    end
+  end
+
+  path '/api/v1/worlds/mine' do
+    get 'List mine worlds' do
+      tags 'Worlds'
+      security [bearerAuth: []]
+      produces 'application/json'
+      description 'Lists only worlds created inside universes owned by the authenticated user. Use q to search your world names.'
+      parameter name: :q, in: :query, required: false, schema: { type: :string }, description: 'Optional case-insensitive name search.'
+
+      response '200', 'mine worlds listed' do
+        schema type: :array, items: { '$ref' => '#/components/schemas/World' }
+
+        let(:q) { nil }
+        before { create(:world, universe: create(:universe, user: user)) }
 
         run_test!
       end
@@ -327,7 +369,7 @@ RSpec.describe 'API V1', type: :request do
       tags 'Worlds'
       security [bearerAuth: []]
       produces 'application/json'
-      description 'Returns one world owned through the authenticated user universe.'
+      description 'Returns one world if it belongs to the authenticated user or is marked public.'
 
       response '200', 'world found' do
         schema '$ref' => '#/components/schemas/World'
@@ -341,9 +383,9 @@ RSpec.describe 'API V1', type: :request do
     patch 'Update a world' do
       tags 'Worlds'
       security [bearerAuth: []]
-      consumes 'application/json'
+      consumes 'application/json', 'multipart/form-data'
       produces 'application/json'
-      description 'Updates world fields. universe_id may move the world to another universe owned by the user.'
+      description 'Updates world fields. universe_id may move the world to another universe owned by the user. Use multipart/form-data to replace portrait_image, cover_image, or misc_images.'
       parameter name: :payload, in: :body, schema: { '$ref' => '#/components/schemas/WorldRequest' }
 
       response '200', 'world updated' do
@@ -375,11 +417,13 @@ RSpec.describe 'API V1', type: :request do
       tags 'Characters'
       security [bearerAuth: []]
       produces 'application/json'
-      description 'Lists characters across the authenticated user universes, including attachment metadata and outgoing relations.'
+      description 'Lists characters visible to the authenticated user: characters in their own universes plus public characters from other users. Private characters from other users are excluded. Includes attachment metadata and outgoing relations. Use q to search by name.'
+      parameter name: :q, in: :query, required: false, schema: { type: :string }, description: 'Optional case-insensitive name search.'
 
       response '200', 'characters listed' do
         schema type: :array, items: { '$ref' => '#/components/schemas/Character' }
 
+        let(:q) { nil }
         before { create(:character, universe: create(:universe, user: user)) }
 
         run_test!
@@ -391,7 +435,7 @@ RSpec.describe 'API V1', type: :request do
       security [bearerAuth: []]
       consumes 'application/json', 'multipart/form-data'
       produces 'application/json'
-      description 'Creates a character. Send JSON for text fields, or multipart/form-data when uploading portrait_image and/or cover_image.'
+      description 'Creates a character. Send JSON for text fields, or multipart/form-data when uploading portrait_image, cover_image, or misc_images.'
       parameter name: :payload, in: :body, schema: { '$ref' => '#/components/schemas/CharacterRequest' }
 
       response '201', 'character created' do
@@ -410,11 +454,31 @@ RSpec.describe 'API V1', type: :request do
               occupation: 'Chronomancer',
               description: 'A guarded scholar.',
               story: 'Born before the first empire.',
+              public: false,
               universe_id: universe.id,
               world_id: world.id
             }
           }
         end
+
+        run_test!
+      end
+    end
+  end
+
+  path '/api/v1/characters/mine' do
+    get 'List mine characters' do
+      tags 'Characters'
+      security [bearerAuth: []]
+      produces 'application/json'
+      description 'Lists only characters created inside universes owned by the authenticated user. Use q to search your character names.'
+      parameter name: :q, in: :query, required: false, schema: { type: :string }, description: 'Optional case-insensitive name search.'
+
+      response '200', 'mine characters listed' do
+        schema type: :array, items: { '$ref' => '#/components/schemas/Character' }
+
+        let(:q) { nil }
+        before { create(:character, universe: create(:universe, user: user)) }
 
         run_test!
       end
@@ -428,7 +492,7 @@ RSpec.describe 'API V1', type: :request do
       tags 'Characters'
       security [bearerAuth: []]
       produces 'application/json'
-      description 'Returns one character owned through the authenticated user universe.'
+      description 'Returns one character if it belongs to the authenticated user or is marked public.'
 
       response '200', 'character found' do
         schema '$ref' => '#/components/schemas/Character'
@@ -444,7 +508,7 @@ RSpec.describe 'API V1', type: :request do
       security [bearerAuth: []]
       consumes 'application/json', 'multipart/form-data'
       produces 'application/json'
-      description 'Updates character fields. Use multipart/form-data to replace portrait_image or cover_image.'
+      description 'Updates character fields. Use multipart/form-data to replace portrait_image, cover_image, or misc_images.'
       parameter name: :payload, in: :body, schema: { '$ref' => '#/components/schemas/CharacterRequest' }
 
       response '200', 'character updated' do

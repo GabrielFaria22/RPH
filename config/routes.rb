@@ -13,9 +13,26 @@ Rails.application.routes.draw do
       end
 
       resources :people, except: %i[new edit]
-      resources :universes, except: %i[new edit]
-      resources :worlds, except: %i[new edit]
-      resources :characters, except: %i[new edit]
+      resources :universes, except: %i[new edit] do
+        get :mine, on: :collection
+      end
+      resources :worlds, except: %i[new edit] do
+        get :mine, on: :collection
+      end
+      resources :characters, except: %i[new edit] do
+        get :mine, on: :collection
+      end
+      resources :families, except: %i[new edit] do
+        get :mine, on: :collection
+      end
+      resources :factions, except: %i[new edit] do
+        get :mine, on: :collection
+      end
+      resources :family_relations, except: %i[new edit]
+      resources :faction_relations, except: %i[new edit]
+      resources :family_trees, except: %i[new edit] do
+        get :mine, on: :collection
+      end
       resources :relations, except: %i[new edit]
     end
   end

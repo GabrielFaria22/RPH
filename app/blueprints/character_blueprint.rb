@@ -1,4 +1,6 @@
 class CharacterBlueprint < Blueprinter::Base
+  include ImageAttachmentFields
+
   identifier :id
 
   fields :name,
@@ -9,33 +11,59 @@ class CharacterBlueprint < Blueprinter::Base
     :occupation,
     :description,
     :story,
+    :public,
     :universe_id,
     :world_id,
+    :family_id,
+    :faction_id,
     :created_at,
     :updated_at
 
-  field :portrait_image do |character|
-    CharacterBlueprint.attachment_payload(character.portrait_image)
+  field :owned_by_current_user do |character, options|
+    options[:current_user].present? && character.universe.user_id == options[:current_user].id
   end
 
-  field :cover_image do |character|
-    CharacterBlueprint.attachment_payload(character.cover_image)
+  field :editable_by_current_user do |character, options|
+    options[:current_user].present? && (options[:current_user].admin? || character.universe.user_id == options[:current_user].id)
   end
 
   field :relations do |character|
     RelationBlueprint.render_as_hash(character.relations)
   end
 
-  class << self
-    def attachment_payload(attachment)
-      return unless attachment.attached?
+  field :universe do |character, options|
+    UniverseBlueprint.render_as_hash(character.universe, current_user: options[:current_user])
+  end
 
-      {
-        filename: attachment.filename.to_s,
-        content_type: attachment.content_type,
-        byte_size: attachment.byte_size,
-        url: Rails.application.routes.url_helpers.rails_blob_path(attachment, only_path: true)
-      }
-    end
+  field :world do |character, options|
+    character.world.present? ? WorldBlueprint.render_as_hash(character.world, current_user: options[:current_user]) : nil
+  end
+
+  field :families do |character, options|
+    FamilyBlueprint.render_as_hash(
+      CharacterBlueprint.visible_scope(character.families, Family, options[:current_user]),
+      current_user: options[:current_user]
+    )
+  end
+
+  field :factions do |character, options|
+    FactionBlueprint.render_as_hash(
+      CharacterBlueprint.visible_scope(character.factions, Faction, options[:current_user]),
+      current_user: options[:current_user]
+    )
+  end
+
+  field :family_trees do |character, options|
+    FamilyTreeBlueprint.render_as_hash(
+      CharacterBlueprint.visible_scope(character.family_trees, FamilyTree, options[:current_user]),
+      current_user: options[:current_user]
+    )
+  end
+
+  def self.visible_scope(scope, model, current_user)
+    return model.none if current_user.blank?
+    return scope if current_user&.admin?
+
+    model.visible_to(current_user).where(id: scope.select(:id))
   end
 end

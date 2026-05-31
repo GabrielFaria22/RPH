@@ -5,9 +5,8 @@ module Api
       before_action :set_relation, only: %i[show update destroy]
 
       def index
-        relations = Relation
-          .joins(character: :universe)
-          .where(universes: { user_id: current_user.id })
+        relations = Relation.joins(character: :universe)
+        relations = relations.where(universes: { user_id: current_user.id }) unless current_user.admin?
 
         render json: RelationBlueprint.render(relations)
       end
@@ -43,23 +42,26 @@ module Api
       private
 
       def set_relation
-        @relation = Relation
-          .joins(character: :universe)
-          .where(universes: { user_id: current_user.id })
-          .find(params[:id])
+        scope = Relation.joins(character: :universe)
+        scope = scope.where(universes: { user_id: current_user.id }) unless current_user.admin?
+        @relation = scope.find(params[:id])
       end
 
       def relation_attributes
         attributes = relation_params
-        attributes[:character] = current_user.characters.find(attributes.delete(:character_id)) if attributes.key?(:character_id)
+        attributes[:character] = editable_characters.find(attributes.delete(:character_id)) if attributes.key?(:character_id)
         if attributes.key?(:related_character_id)
-          attributes[:related_character] = current_user.characters.find(attributes.delete(:related_character_id))
+          attributes[:related_character] = editable_characters.find(attributes.delete(:related_character_id))
         end
         attributes
       end
 
       def relation_params
         params.require(:relation).permit(:character_id, :related_character_id, :relation_type)
+      end
+
+      def editable_characters
+        current_user.admin? ? Character.all : current_user.characters
       end
     end
   end

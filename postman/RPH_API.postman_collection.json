@@ -1,0 +1,519 @@
+{
+  "info": {
+    "_postman_id": "4b57a8c4-3eba-4556-bf5f-7e63d86c9430",
+    "name": "RPH API",
+    "description": "Postman collection for the RPH Rails API. Import this file plus `RPH Local` environment. Run `Auth / Signup` once, then `Auth / Login`; login saves `{{token}}` automatically. Create requests save IDs for later show/update/delete requests.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": []
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "pm.test('status is below 500', function () {",
+          "  pm.expect(pm.response.code).to.be.below(500);",
+          "});"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:3001" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Signup",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user\": {\n    \"email\": \"{{email}}\",\n    \"password\": \"{{password}}\",\n    \"password_confirmation\": \"{{password}}\"\n  }\n}"
+            },
+            "url": "{{base_url}}/api/v1/auth/signup",
+            "description": "Creates a user. If this returns 422 because the email already exists, run Login next."
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.token) {",
+                  "  pm.environment.set('token', json.token);",
+                  "}",
+                  "pm.test('token was saved', function () {",
+                  "  pm.expect(pm.environment.get('token')).to.not.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user\": {\n    \"email\": \"{{email}}\",\n    \"password\": \"{{password}}\"\n  }\n}"
+            },
+            "url": "{{base_url}}/api/v1/auth/login",
+            "description": "Logs in and stores the JWT in the `token` environment variable."
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{base_url}}/api/v1/auth/logout"
+          }
+        }
+      ]
+    },
+    {
+      "name": "People",
+      "item": [
+        {
+          "name": "List People",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/people",
+            "description": "Lists people owned by the authenticated user."
+          }
+        },
+        {
+          "name": "Create Person",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.id) pm.environment.set('person_id', json.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"person\": {\n    \"first_name\": \"Grace\",\n    \"last_name\": \"Hopper\",\n    \"email\": \"grace.postman@example.com\",\n    \"phone\": \"555-0200\"\n  }\n}"
+            },
+            "url": "{{base_url}}/api/v1/people"
+          }
+        },
+        {
+          "name": "Show Person",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/people/{{person_id}}"
+          }
+        },
+        {
+          "name": "Update Person",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"person\": {\n    \"first_name\": \"Updated Grace\",\n    \"last_name\": \"Hopper\",\n    \"email\": \"updated.grace.postman@example.com\",\n    \"phone\": \"555-0300\"\n  }\n}"
+            },
+            "url": "{{base_url}}/api/v1/people/{{person_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Universes",
+      "item": [
+        {
+          "name": "List Visible Universes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/universes",
+            "description": "Lists universes visible to you: your universes plus public universes from other users."
+          }
+        },
+        {
+          "name": "Search Visible Universes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/universes?q=Prime"
+          }
+        },
+        {
+          "name": "List Mine Universes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/universes/mine",
+            "description": "Lists only universes created by the authenticated user."
+          }
+        },
+        {
+          "name": "Search Mine Universes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/universes/mine?q=Prime"
+          }
+        },
+        {
+          "name": "Create Universe",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.id) pm.environment.set('universe_id', json.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"universe\": {\n    \"name\": \"Prime Continuity\",\n    \"description\": \"Main continuity created from Postman.\",\n    \"public\": false\n  }\n}"
+            },
+            "url": "{{base_url}}/api/v1/universes"
+          }
+        },
+        {
+          "name": "Create Universe With Images",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "universe[name]", "value": "Image Universe", "type": "text" },
+                { "key": "universe[description]", "value": "Universe with attached images.", "type": "text" },
+                { "key": "universe[public]", "value": "false", "type": "text" },
+                { "key": "universe[portrait_image]", "type": "file", "src": [] },
+                { "key": "universe[cover_image]", "type": "file", "src": [] },
+                { "key": "universe[misc_images][]", "type": "file", "src": [] }
+              ]
+            },
+            "url": "{{base_url}}/api/v1/universes",
+            "description": "Select local files in Postman before sending. Portrait max 5MB vertical, cover max 20MB horizontal, misc max 8 images at 5MB each."
+          }
+        },
+        {
+          "name": "Show Universe",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/universes/{{universe_id}}"
+          }
+        },
+        {
+          "name": "Update Universe",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"universe\": {\n    \"name\": \"Updated Prime Continuity\",\n    \"description\": \"Updated from Postman.\",\n    \"public\": true\n  }\n}"
+            },
+            "url": "{{base_url}}/api/v1/universes/{{universe_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Worlds",
+      "item": [
+        {
+          "name": "List Visible Worlds",
+          "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/worlds" }
+        },
+        {
+          "name": "Search Visible Worlds",
+          "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/worlds?q=Earth" }
+        },
+        {
+          "name": "List Mine Worlds",
+          "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/worlds/mine" }
+        },
+        {
+          "name": "Create World",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.id) pm.environment.set('world_id', json.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"world\": {\n    \"name\": \"Earth\",\n    \"description\": \"Home world created from Postman.\",\n    \"public\": false,\n    \"universe_id\": {{universe_id}}\n  }\n}"
+            },
+            "url": "{{base_url}}/api/v1/worlds"
+          }
+        },
+        {
+          "name": "Create World With Images",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "world[name]", "value": "Image World", "type": "text" },
+                { "key": "world[description]", "value": "World with attached images.", "type": "text" },
+                { "key": "world[public]", "value": "false", "type": "text" },
+                { "key": "world[universe_id]", "value": "{{universe_id}}", "type": "text" },
+                { "key": "world[portrait_image]", "type": "file", "src": [] },
+                { "key": "world[cover_image]", "type": "file", "src": [] },
+                { "key": "world[misc_images][]", "type": "file", "src": [] }
+              ]
+            },
+            "url": "{{base_url}}/api/v1/worlds"
+          }
+        },
+        {
+          "name": "Show World",
+          "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/worlds/{{world_id}}" }
+        },
+        {
+          "name": "Update World",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"world\": {\n    \"name\": \"Updated Earth\",\n    \"description\": \"Updated from Postman.\",\n    \"public\": true,\n    \"universe_id\": {{universe_id}}\n  }\n}"
+            },
+            "url": "{{base_url}}/api/v1/worlds/{{world_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Characters",
+      "item": [
+        {
+          "name": "List Visible Characters",
+          "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/characters" }
+        },
+        {
+          "name": "Search Visible Characters",
+          "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/characters?q=Aster" }
+        },
+        {
+          "name": "List Mine Characters",
+          "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/characters/mine" }
+        },
+        {
+          "name": "Create Character",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.id) pm.environment.set('character_id', json.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"character\": {\n    \"name\": \"Aster\",\n    \"full_name\": \"Aster Vale Solarin\",\n    \"nickname\": \"The Starborn\",\n    \"age\": \"1000001\",\n    \"appearance\": \"Silver hair and amber eyes.\",\n    \"occupation\": \"Chronomancer\",\n    \"description\": \"A guarded scholar.\",\n    \"story\": \"Born before the first empire.\",\n    \"public\": false,\n    \"universe_id\": {{universe_id}},\n    \"world_id\": {{world_id}}\n  }\n}"
+            },
+            "url": "{{base_url}}/api/v1/characters"
+          }
+        },
+        {
+          "name": "Create Related Character",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.id) pm.environment.set('related_character_id', json.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"character\": {\n    \"name\": \"Nova\",\n    \"public\": false,\n    \"universe_id\": {{universe_id}},\n    \"world_id\": {{world_id}}\n  }\n}"
+            },
+            "url": "{{base_url}}/api/v1/characters"
+          }
+        },
+        {
+          "name": "Create Character With Images",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "character[name]", "value": "Image Character", "type": "text" },
+                { "key": "character[public]", "value": "false", "type": "text" },
+                { "key": "character[universe_id]", "value": "{{universe_id}}", "type": "text" },
+                { "key": "character[world_id]", "value": "{{world_id}}", "type": "text" },
+                { "key": "character[portrait_image]", "type": "file", "src": [] },
+                { "key": "character[cover_image]", "type": "file", "src": [] },
+                { "key": "character[misc_images][]", "type": "file", "src": [] }
+              ]
+            },
+            "url": "{{base_url}}/api/v1/characters"
+          }
+        },
+        {
+          "name": "Show Character",
+          "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/characters/{{character_id}}" }
+        },
+        {
+          "name": "Update Character",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"character\": {\n    \"name\": \"Updated Aster\",\n    \"age\": \"1000002\",\n    \"public\": true,\n    \"universe_id\": {{universe_id}},\n    \"world_id\": {{world_id}}\n  }\n}"
+            },
+            "url": "{{base_url}}/api/v1/characters/{{character_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Relations",
+      "item": [
+        {
+          "name": "List Relations",
+          "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/relations" }
+        },
+        {
+          "name": "Create Relation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.id) pm.environment.set('relation_id', json.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"relation\": {\n    \"character_id\": {{character_id}},\n    \"related_character_id\": {{related_character_id}},\n    \"relation_type\": \"friend\"\n  }\n}"
+            },
+            "url": "{{base_url}}/api/v1/relations",
+            "description": "relation_type examples: parent, child, sibling, spouse, lover, friend, enemy, rival, mentor, student, ally, other."
+          }
+        },
+        {
+          "name": "Show Relation",
+          "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/relations/{{relation_id}}" }
+        },
+        {
+          "name": "Update Relation",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"relation\": {\n    \"relation_type\": \"ally\"\n  }\n}"
+            },
+            "url": "{{base_url}}/api/v1/relations/{{relation_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cleanup Deletes",
+      "item": [
+        {
+          "name": "Delete Relation",
+          "request": { "method": "DELETE", "header": [], "url": "{{base_url}}/api/v1/relations/{{relation_id}}" }
+        },
+        {
+          "name": "Delete Related Character",
+          "request": { "method": "DELETE", "header": [], "url": "{{base_url}}/api/v1/characters/{{related_character_id}}" }
+        },
+        {
+          "name": "Delete Character",
+          "request": { "method": "DELETE", "header": [], "url": "{{base_url}}/api/v1/characters/{{character_id}}" }
+        },
+        {
+          "name": "Delete World",
+          "request": { "method": "DELETE", "header": [], "url": "{{base_url}}/api/v1/worlds/{{world_id}}" }
+        },
+        {
+          "name": "Delete Universe",
+          "request": { "method": "DELETE", "header": [], "url": "{{base_url}}/api/v1/universes/{{universe_id}}" }
+        },
+        {
+          "name": "Delete Person",
+          "request": { "method": "DELETE", "header": [], "url": "{{base_url}}/api/v1/people/{{person_id}}" }
+        }
+      ]
+    }
+  ]
+}

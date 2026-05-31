@@ -5,7 +5,9 @@ module Api
       before_action :set_person, only: %i[show update destroy]
 
       def index
-        render json: PersonBlueprint.render(current_user.people)
+        people = current_user.admin? ? Person.all : current_user.people
+
+        render json: PersonBlueprint.render(people)
       end
 
       def show
@@ -39,7 +41,8 @@ module Api
       private
 
       def set_person
-        @person = current_user.people.find(params[:id])
+        scope = current_user.admin? ? Person.all : current_user.people
+        @person = scope.find(params[:id])
       end
 
       def person_params
