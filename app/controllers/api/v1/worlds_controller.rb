@@ -5,13 +5,13 @@ module Api
       before_action :set_world, only: %i[show update destroy]
 
       def index
-        worlds = search_by_name(current_user.admin? ? World.all : World.visible_to(current_user))
+        worlds = search_records(current_user.admin? ? World.all : World.visible_to(current_user))
 
         render json: WorldBlueprint.render(with_attached_images(worlds), current_user: current_user)
       end
 
       def mine
-        worlds = search_by_name(current_user.worlds)
+        worlds = search_records(current_user.worlds)
 
         render json: WorldBlueprint.render(with_attached_images(worlds), current_user: current_user)
       end
@@ -60,17 +60,31 @@ module Api
       end
 
       def world_params
-        params.require(:world).permit(:name, :description, :public, :universe_id, :portrait_image, :cover_image, misc_images: [])
-      end
-
-      def search_by_name(scope)
-        return scope unless params[:q].present?
-
-        scope.where('worlds.name ILIKE ?', "%#{params[:q]}%")
+        params.require(:world).permit(
+          :name,
+          :description,
+          :public,
+          :universe_id,
+          :portrait_image,
+          :portrait_image_description,
+          :cover_image,
+          :cover_image_description,
+          :banner_image,
+          :banner_image_description,
+          :crest_image,
+          :crest_image_description,
+          :misc_images_description,
+          misc_images: []
+        )
       end
 
       def with_attached_images(scope)
-        scope.with_attached_portrait_image.with_attached_cover_image.with_attached_misc_images
+        scope
+          .with_attached_portrait_image
+          .with_attached_cover_image
+          .with_attached_banner_image
+          .with_attached_crest_image
+          .with_attached_misc_images
       end
 
       def owns_world?(world)

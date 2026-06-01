@@ -55,6 +55,21 @@ RSpec.describe 'Api::V1::FamilyTrees', type: :request do
     expect(response_ids).to contain_exactly(own_family_tree.id)
   end
 
+  it 'filters and sorts visible family trees with Ransack params' do
+    later_family_tree = create(:family_tree, universe: create(:universe, user: user), name: 'Zephyr Line', public: true)
+    earlier_family_tree = create(:family_tree, universe: create(:universe, user: other_user), name: 'Aurora Line', public: true)
+    create(:family_tree, universe: create(:universe, user: user), name: 'Ashen Branch', public: true)
+    create(:family_tree, universe: create(:universe, user: other_user), name: 'Hidden Line', public: false)
+
+    get '/api/v1/family_trees',
+      params: { q: { name_cont: 'Line', public_eq: true, s: 'name desc' } },
+      headers: headers
+
+    response_ids = JSON.parse(response.body).map { |family_tree| family_tree['id'] }
+    expect(response).to have_http_status(:ok)
+    expect(response_ids).to eq([later_family_tree.id, earlier_family_tree.id])
+  end
+
   it 'does not expose another user private family tree' do
     family_tree = create(:family_tree, universe: create(:universe, user: other_user))
 

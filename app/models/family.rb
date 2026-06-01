@@ -1,4 +1,6 @@
 class Family < ApplicationRecord
+  include AttachableImages
+
   belongs_to :universe
   belongs_to :leader_character, class_name: 'Character'
   belongs_to :faction, optional: true
@@ -22,6 +24,19 @@ class Family < ApplicationRecord
   validates :name, presence: true
   validate :leader_character_belongs_to_universe
   validate :faction_belongs_to_universe
+
+  def self.ransackable_attributes(_auth_object = nil)
+    %w[
+      created_at
+      faction_id
+      id
+      leader_character_id
+      name
+      public
+      universe_id
+      updated_at
+    ]
+  end
 
   private
 

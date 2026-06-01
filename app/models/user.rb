@@ -22,6 +22,10 @@ class User < ApplicationRecord
     admin: 'admin'
   }, validate: true
 
+  def locations
+    Location.owned_by(self)
+  end
+
   private
 
   def admin_email?

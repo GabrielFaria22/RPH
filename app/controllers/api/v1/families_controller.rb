@@ -5,15 +5,15 @@ module Api
       before_action :set_family, only: %i[show update destroy]
 
       def index
-        families = search_by_name(current_user.admin? ? Family.all : Family.visible_to(current_user))
+        families = search_records(current_user.admin? ? Family.all : Family.visible_to(current_user))
 
-        render json: FamilyBlueprint.render(families.includes(:family_tree), current_user: current_user)
+        render json: FamilyBlueprint.render(with_attached_images(families).includes(:family_tree), current_user: current_user)
       end
 
       def mine
-        families = search_by_name(current_user.families)
+        families = search_records(current_user.families)
 
-        render json: FamilyBlueprint.render(families.includes(:family_tree), current_user: current_user)
+        render json: FamilyBlueprint.render(with_attached_images(families).includes(:family_tree), current_user: current_user)
       end
 
       def show
@@ -62,11 +62,37 @@ module Api
 
       def set_family
         scope = current_user.admin? ? Family.all : Family.visible_to(current_user)
-        @family = scope.includes(:family_tree).find(params[:id])
+        @family = with_attached_images(scope).includes(:family_tree).find(params[:id])
       end
 
       def family_params
-        params.require(:family).permit(:name, :description, :public, :universe_id, :leader_character_id, :faction_id)
+        params.require(:family).permit(
+          :name,
+          :description,
+          :public,
+          :universe_id,
+          :leader_character_id,
+          :faction_id,
+          :portrait_image,
+          :portrait_image_description,
+          :cover_image,
+          :cover_image_description,
+          :banner_image,
+          :banner_image_description,
+          :crest_image,
+          :crest_image_description,
+          :misc_images_description,
+          misc_images: []
+        )
+      end
+
+      def with_attached_images(scope)
+        scope
+          .with_attached_portrait_image
+          .with_attached_cover_image
+          .with_attached_banner_image
+          .with_attached_crest_image
+          .with_attached_misc_images
       end
 
       def family_attributes(attributes, universe)
@@ -95,12 +121,6 @@ module Api
 
       def render_last_family_required
         render json: { errors: ['Faction must have at least one family'] }, status: :unprocessable_entity
-      end
-
-      def search_by_name(scope)
-        return scope unless params[:q].present?
-
-        scope.where('families.name ILIKE ?', "%#{params[:q]}%")
       end
 
       def owns_family?(family)

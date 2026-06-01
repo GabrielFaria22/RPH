@@ -325,6 +325,7 @@ components:
               - servant
               - creator
               - creation
+              - alternate_version
               - other
               example: friend
     ErrorResponse:
@@ -695,6 +696,7 @@ components:
           - servant
           - creator
           - creation
+          - alternate_version
           - other
           example: friend
         created_at:
@@ -897,14 +899,39 @@ paths:
       - bearerAuth: []
       description: 'Lists universes visible to the authenticated user: all of their
         own universes plus public universes from other users. Private universes from
-        other users are excluded. Use q to search by name.'
+        other users are excluded. Use q for legacy name search, or Ransack params
+        such as q[name_cont], q[genre_eq], q[public_eq], and q[s].'
       parameters:
       - name: q
         in: query
         required: false
         schema:
           type: string
-        description: Optional case-insensitive name search.
+        description: Legacy optional case-insensitive name search.
+      - name: q[name_cont]
+        in: query
+        required: false
+        schema:
+          type: string
+        description: 'Ransack: case-insensitive name contains filter.'
+      - name: q[genre_eq]
+        in: query
+        required: false
+        schema:
+          type: string
+        description: 'Ransack: exact genre filter.'
+      - name: q[public_eq]
+        in: query
+        required: false
+        schema:
+          type: boolean
+        description: 'Ransack: exact public/private filter within visible records.'
+      - name: q[s]
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Ransack sort expression, such as name asc or created_at desc.
       responses:
         '200':
           description: universes listed
@@ -945,15 +972,40 @@ paths:
       - Universes
       security:
       - bearerAuth: []
-      description: Lists only universes created by the authenticated user. Use q to
-        search your universe names.
+      description: Lists only universes created by the authenticated user. Use q for
+        legacy name search, or Ransack params such as q[name_cont], q[genre_eq], q[public_eq],
+        and q[s].
       parameters:
       - name: q
         in: query
         required: false
         schema:
           type: string
-        description: Optional case-insensitive name search.
+        description: Legacy optional case-insensitive name search.
+      - name: q[name_cont]
+        in: query
+        required: false
+        schema:
+          type: string
+        description: 'Ransack: case-insensitive name contains filter.'
+      - name: q[genre_eq]
+        in: query
+        required: false
+        schema:
+          type: string
+        description: 'Ransack: exact genre filter.'
+      - name: q[public_eq]
+        in: query
+        required: false
+        schema:
+          type: boolean
+        description: 'Ransack: exact public/private filter.'
+      - name: q[s]
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Ransack sort expression, such as name asc or created_at desc.
       responses:
         '200':
           description: mine universes listed
@@ -1029,14 +1081,39 @@ paths:
       - bearerAuth: []
       description: 'Lists worlds visible to the authenticated user: worlds in their
         own universes plus public worlds from other users. Private worlds from other
-        users are excluded. Use q to search by name.'
+        users are excluded. Use q for legacy name search, or Ransack params such as
+        q[name_cont], q[universe_id_eq], q[public_eq], and q[s].'
       parameters:
       - name: q
         in: query
         required: false
         schema:
           type: string
-        description: Optional case-insensitive name search.
+        description: Legacy optional case-insensitive name search.
+      - name: q[name_cont]
+        in: query
+        required: false
+        schema:
+          type: string
+        description: 'Ransack: case-insensitive name contains filter.'
+      - name: q[universe_id_eq]
+        in: query
+        required: false
+        schema:
+          type: integer
+        description: 'Ransack: exact universe ID filter.'
+      - name: q[public_eq]
+        in: query
+        required: false
+        schema:
+          type: boolean
+        description: 'Ransack: exact public/private filter within visible records.'
+      - name: q[s]
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Ransack sort expression, such as name asc or created_at desc.
       responses:
         '200':
           description: worlds listed
@@ -1079,14 +1156,39 @@ paths:
       security:
       - bearerAuth: []
       description: Lists only worlds created inside universes owned by the authenticated
-        user. Use q to search your world names.
+        user. Use q for legacy name search, or Ransack params such as q[name_cont],
+        q[universe_id_eq], q[public_eq], and q[s].
       parameters:
       - name: q
         in: query
         required: false
         schema:
           type: string
-        description: Optional case-insensitive name search.
+        description: Legacy optional case-insensitive name search.
+      - name: q[name_cont]
+        in: query
+        required: false
+        schema:
+          type: string
+        description: 'Ransack: case-insensitive name contains filter.'
+      - name: q[universe_id_eq]
+        in: query
+        required: false
+        schema:
+          type: integer
+        description: 'Ransack: exact universe ID filter.'
+      - name: q[public_eq]
+        in: query
+        required: false
+        schema:
+          type: boolean
+        description: 'Ransack: exact public/private filter.'
+      - name: q[s]
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Ransack sort expression, such as name asc or created_at desc.
       responses:
         '200':
           description: mine worlds listed
@@ -1165,14 +1267,45 @@ paths:
       description: 'Lists characters visible to the authenticated user: characters
         in their own universes plus public characters from other users. Private characters
         from other users are excluded. Includes attachment metadata and outgoing relations.
-        Use q to search by name.'
+        Use q for legacy name search, or Ransack params such as q[name_cont], q[universe_id_eq],
+        q[world_id_eq], q[public_eq], and q[s].'
       parameters:
       - name: q
         in: query
         required: false
         schema:
           type: string
-        description: Optional case-insensitive name search.
+        description: Legacy optional case-insensitive name search.
+      - name: q[name_cont]
+        in: query
+        required: false
+        schema:
+          type: string
+        description: 'Ransack: case-insensitive name contains filter.'
+      - name: q[universe_id_eq]
+        in: query
+        required: false
+        schema:
+          type: integer
+        description: 'Ransack: exact universe ID filter.'
+      - name: q[world_id_eq]
+        in: query
+        required: false
+        schema:
+          type: integer
+        description: 'Ransack: exact world ID filter.'
+      - name: q[public_eq]
+        in: query
+        required: false
+        schema:
+          type: boolean
+        description: 'Ransack: exact public/private filter within visible records.'
+      - name: q[s]
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Ransack sort expression, such as name asc or created_at desc.
       responses:
         '200':
           description: characters listed
@@ -1214,14 +1347,45 @@ paths:
       security:
       - bearerAuth: []
       description: Lists only characters created inside universes owned by the authenticated
-        user. Use q to search your character names.
+        user. Use q for legacy name search, or Ransack params such as q[name_cont],
+        q[universe_id_eq], q[world_id_eq], q[public_eq], and q[s].
       parameters:
       - name: q
         in: query
         required: false
         schema:
           type: string
-        description: Optional case-insensitive name search.
+        description: Legacy optional case-insensitive name search.
+      - name: q[name_cont]
+        in: query
+        required: false
+        schema:
+          type: string
+        description: 'Ransack: case-insensitive name contains filter.'
+      - name: q[universe_id_eq]
+        in: query
+        required: false
+        schema:
+          type: integer
+        description: 'Ransack: exact universe ID filter.'
+      - name: q[world_id_eq]
+        in: query
+        required: false
+        schema:
+          type: integer
+        description: 'Ransack: exact world ID filter.'
+      - name: q[public_eq]
+        in: query
+        required: false
+        schema:
+          type: boolean
+        description: 'Ransack: exact public/private filter.'
+      - name: q[s]
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Ransack sort expression, such as name asc or created_at desc.
       responses:
         '200':
           description: mine characters listed

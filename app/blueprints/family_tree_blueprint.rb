@@ -1,4 +1,6 @@
 class FamilyTreeBlueprint < Blueprinter::Base
+  include ImageAttachmentFields
+
   identifier :id
 
   fields :name, :description, :public, :layout, :universe_id, :family_id, :created_at, :updated_at

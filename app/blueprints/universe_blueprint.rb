@@ -5,6 +5,10 @@ class UniverseBlueprint < Blueprinter::Base
 
   fields :name, :description, :public, :created_at, :updated_at
 
+  field :genre do |universe|
+    Universe.genres[universe.genre]
+  end
+
   field :owned_by_current_user do |universe, options|
     options[:current_user].present? && universe.user_id == options[:current_user].id
   end

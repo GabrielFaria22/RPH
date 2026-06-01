@@ -68,6 +68,21 @@ RSpec.describe 'Api::V1::Worlds', type: :request do
     expect(response_ids).to contain_exactly(own_world.id)
   end
 
+  it 'filters and sorts visible worlds with Ransack params' do
+    later_world = create(:world, universe: create(:universe, user: user), name: 'Zephyr Earth', public: true)
+    earlier_world = create(:world, universe: create(:universe, user: other_user), name: 'Aurora Earth', public: true)
+    create(:world, universe: create(:universe, user: user), name: 'Hidden Mars', public: true)
+    create(:world, universe: create(:universe, user: other_user), name: 'Hidden Earth', public: false)
+
+    get '/api/v1/worlds',
+      params: { q: { name_cont: 'Earth', public_eq: true, s: 'name desc' } },
+      headers: headers
+
+    response_ids = JSON.parse(response.body).map { |world| world['id'] }
+    expect(response).to have_http_status(:ok)
+    expect(response_ids).to eq([later_world.id, earlier_world.id])
+  end
+
   it 'does not expose another user world' do
     world = create(:world, universe: create(:universe, user: other_user))
 

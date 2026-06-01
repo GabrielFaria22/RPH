@@ -207,8 +207,12 @@ RSpec.describe 'API V1', type: :request do
       tags 'Universes'
       security [bearerAuth: []]
       produces 'application/json'
-      description 'Lists universes visible to the authenticated user: all of their own universes plus public universes from other users. Private universes from other users are excluded. Use q to search by name.'
-      parameter name: :q, in: :query, required: false, schema: { type: :string }, description: 'Optional case-insensitive name search.'
+      description 'Lists universes visible to the authenticated user: all of their own universes plus public universes from other users. Private universes from other users are excluded. Use q for legacy name search, or Ransack params such as q[name_cont], q[genre_eq], q[public_eq], and q[s].'
+      parameter name: :q, in: :query, required: false, schema: { type: :string }, description: 'Legacy optional case-insensitive name search.'
+      parameter name: 'q[name_cont]', in: :query, required: false, schema: { type: :string }, description: 'Ransack: case-insensitive name contains filter.'
+      parameter name: 'q[genre_eq]', in: :query, required: false, schema: { type: :string }, description: 'Ransack: exact genre filter.'
+      parameter name: 'q[public_eq]', in: :query, required: false, schema: { type: :boolean }, description: 'Ransack: exact public/private filter within visible records.'
+      parameter name: 'q[s]', in: :query, required: false, schema: { type: :string }, description: 'Ransack sort expression, such as name asc or created_at desc.'
 
       response '200', 'universes listed' do
         schema type: :array, items: { '$ref' => '#/components/schemas/Universe' }
@@ -243,8 +247,12 @@ RSpec.describe 'API V1', type: :request do
       tags 'Universes'
       security [bearerAuth: []]
       produces 'application/json'
-      description 'Lists only universes created by the authenticated user. Use q to search your universe names.'
-      parameter name: :q, in: :query, required: false, schema: { type: :string }, description: 'Optional case-insensitive name search.'
+      description 'Lists only universes created by the authenticated user. Use q for legacy name search, or Ransack params such as q[name_cont], q[genre_eq], q[public_eq], and q[s].'
+      parameter name: :q, in: :query, required: false, schema: { type: :string }, description: 'Legacy optional case-insensitive name search.'
+      parameter name: 'q[name_cont]', in: :query, required: false, schema: { type: :string }, description: 'Ransack: case-insensitive name contains filter.'
+      parameter name: 'q[genre_eq]', in: :query, required: false, schema: { type: :string }, description: 'Ransack: exact genre filter.'
+      parameter name: 'q[public_eq]', in: :query, required: false, schema: { type: :boolean }, description: 'Ransack: exact public/private filter.'
+      parameter name: 'q[s]', in: :query, required: false, schema: { type: :string }, description: 'Ransack sort expression, such as name asc or created_at desc.'
 
       response '200', 'mine universes listed' do
         schema type: :array, items: { '$ref' => '#/components/schemas/Universe' }
@@ -311,8 +319,12 @@ RSpec.describe 'API V1', type: :request do
       tags 'Worlds'
       security [bearerAuth: []]
       produces 'application/json'
-      description 'Lists worlds visible to the authenticated user: worlds in their own universes plus public worlds from other users. Private worlds from other users are excluded. Use q to search by name.'
-      parameter name: :q, in: :query, required: false, schema: { type: :string }, description: 'Optional case-insensitive name search.'
+      description 'Lists worlds visible to the authenticated user: worlds in their own universes plus public worlds from other users. Private worlds from other users are excluded. Use q for legacy name search, or Ransack params such as q[name_cont], q[universe_id_eq], q[public_eq], and q[s].'
+      parameter name: :q, in: :query, required: false, schema: { type: :string }, description: 'Legacy optional case-insensitive name search.'
+      parameter name: 'q[name_cont]', in: :query, required: false, schema: { type: :string }, description: 'Ransack: case-insensitive name contains filter.'
+      parameter name: 'q[universe_id_eq]', in: :query, required: false, schema: { type: :integer }, description: 'Ransack: exact universe ID filter.'
+      parameter name: 'q[public_eq]', in: :query, required: false, schema: { type: :boolean }, description: 'Ransack: exact public/private filter within visible records.'
+      parameter name: 'q[s]', in: :query, required: false, schema: { type: :string }, description: 'Ransack sort expression, such as name asc or created_at desc.'
 
       response '200', 'worlds listed' do
         schema type: :array, items: { '$ref' => '#/components/schemas/World' }
@@ -348,8 +360,12 @@ RSpec.describe 'API V1', type: :request do
       tags 'Worlds'
       security [bearerAuth: []]
       produces 'application/json'
-      description 'Lists only worlds created inside universes owned by the authenticated user. Use q to search your world names.'
-      parameter name: :q, in: :query, required: false, schema: { type: :string }, description: 'Optional case-insensitive name search.'
+      description 'Lists only worlds created inside universes owned by the authenticated user. Use q for legacy name search, or Ransack params such as q[name_cont], q[universe_id_eq], q[public_eq], and q[s].'
+      parameter name: :q, in: :query, required: false, schema: { type: :string }, description: 'Legacy optional case-insensitive name search.'
+      parameter name: 'q[name_cont]', in: :query, required: false, schema: { type: :string }, description: 'Ransack: case-insensitive name contains filter.'
+      parameter name: 'q[universe_id_eq]', in: :query, required: false, schema: { type: :integer }, description: 'Ransack: exact universe ID filter.'
+      parameter name: 'q[public_eq]', in: :query, required: false, schema: { type: :boolean }, description: 'Ransack: exact public/private filter.'
+      parameter name: 'q[s]', in: :query, required: false, schema: { type: :string }, description: 'Ransack sort expression, such as name asc or created_at desc.'
 
       response '200', 'mine worlds listed' do
         schema type: :array, items: { '$ref' => '#/components/schemas/World' }
@@ -417,8 +433,13 @@ RSpec.describe 'API V1', type: :request do
       tags 'Characters'
       security [bearerAuth: []]
       produces 'application/json'
-      description 'Lists characters visible to the authenticated user: characters in their own universes plus public characters from other users. Private characters from other users are excluded. Includes attachment metadata and outgoing relations. Use q to search by name.'
-      parameter name: :q, in: :query, required: false, schema: { type: :string }, description: 'Optional case-insensitive name search.'
+      description 'Lists characters visible to the authenticated user: characters in their own universes plus public characters from other users. Private characters from other users are excluded. Includes attachment metadata and outgoing relations. Use q for legacy name search, or Ransack params such as q[name_cont], q[universe_id_eq], q[world_id_eq], q[public_eq], and q[s].'
+      parameter name: :q, in: :query, required: false, schema: { type: :string }, description: 'Legacy optional case-insensitive name search.'
+      parameter name: 'q[name_cont]', in: :query, required: false, schema: { type: :string }, description: 'Ransack: case-insensitive name contains filter.'
+      parameter name: 'q[universe_id_eq]', in: :query, required: false, schema: { type: :integer }, description: 'Ransack: exact universe ID filter.'
+      parameter name: 'q[world_id_eq]', in: :query, required: false, schema: { type: :integer }, description: 'Ransack: exact world ID filter.'
+      parameter name: 'q[public_eq]', in: :query, required: false, schema: { type: :boolean }, description: 'Ransack: exact public/private filter within visible records.'
+      parameter name: 'q[s]', in: :query, required: false, schema: { type: :string }, description: 'Ransack sort expression, such as name asc or created_at desc.'
 
       response '200', 'characters listed' do
         schema type: :array, items: { '$ref' => '#/components/schemas/Character' }
@@ -471,8 +492,13 @@ RSpec.describe 'API V1', type: :request do
       tags 'Characters'
       security [bearerAuth: []]
       produces 'application/json'
-      description 'Lists only characters created inside universes owned by the authenticated user. Use q to search your character names.'
-      parameter name: :q, in: :query, required: false, schema: { type: :string }, description: 'Optional case-insensitive name search.'
+      description 'Lists only characters created inside universes owned by the authenticated user. Use q for legacy name search, or Ransack params such as q[name_cont], q[universe_id_eq], q[world_id_eq], q[public_eq], and q[s].'
+      parameter name: :q, in: :query, required: false, schema: { type: :string }, description: 'Legacy optional case-insensitive name search.'
+      parameter name: 'q[name_cont]', in: :query, required: false, schema: { type: :string }, description: 'Ransack: case-insensitive name contains filter.'
+      parameter name: 'q[universe_id_eq]', in: :query, required: false, schema: { type: :integer }, description: 'Ransack: exact universe ID filter.'
+      parameter name: 'q[world_id_eq]', in: :query, required: false, schema: { type: :integer }, description: 'Ransack: exact world ID filter.'
+      parameter name: 'q[public_eq]', in: :query, required: false, schema: { type: :boolean }, description: 'Ransack: exact public/private filter.'
+      parameter name: 'q[s]', in: :query, required: false, schema: { type: :string }, description: 'Ransack sort expression, such as name asc or created_at desc.'
 
       response '200', 'mine characters listed' do
         schema type: :array, items: { '$ref' => '#/components/schemas/Character' }

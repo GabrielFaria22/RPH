@@ -5,15 +5,15 @@ module Api
       before_action :set_family_tree, only: %i[show update destroy]
 
       def index
-        family_trees = search_by_name(current_user.admin? ? FamilyTree.all : FamilyTree.visible_to(current_user))
+        family_trees = search_records(current_user.admin? ? FamilyTree.all : FamilyTree.visible_to(current_user))
 
-        render json: FamilyTreeBlueprint.render(family_trees, current_user: current_user)
+        render json: FamilyTreeBlueprint.render(with_attached_images(family_trees), current_user: current_user)
       end
 
       def mine
-        family_trees = search_by_name(current_user.family_trees)
+        family_trees = search_records(current_user.family_trees)
 
-        render json: FamilyTreeBlueprint.render(family_trees, current_user: current_user)
+        render json: FamilyTreeBlueprint.render(with_attached_images(family_trees), current_user: current_user)
       end
 
       def show
@@ -61,11 +61,27 @@ module Api
 
       def set_family_tree
         scope = current_user.admin? ? FamilyTree.all : FamilyTree.visible_to(current_user)
-        @family_tree = scope.find(params[:id])
+        @family_tree = with_attached_images(scope).find(params[:id])
       end
 
       def family_tree_params
-        permitted = params.require(:family_tree).permit(:name, :description, :public, :universe_id, :family_id)
+        permitted = params.require(:family_tree).permit(
+          :name,
+          :description,
+          :public,
+          :universe_id,
+          :family_id,
+          :portrait_image,
+          :portrait_image_description,
+          :cover_image,
+          :cover_image_description,
+          :banner_image,
+          :banner_image_description,
+          :crest_image,
+          :crest_image_description,
+          :misc_images_description,
+          misc_images: []
+        )
         return permitted unless params[:family_tree].key?(:layout)
 
         permitted[:layout] = normalize_layout(params[:family_tree][:layout])
@@ -87,10 +103,13 @@ module Api
         attributes
       end
 
-      def search_by_name(scope)
-        return scope unless params[:q].present?
-
-        scope.where('family_trees.name ILIKE ?', "%#{params[:q]}%")
+      def with_attached_images(scope)
+        scope
+          .with_attached_portrait_image
+          .with_attached_cover_image
+          .with_attached_banner_image
+          .with_attached_crest_image
+          .with_attached_misc_images
       end
 
       def owns_family_tree?(family_tree)

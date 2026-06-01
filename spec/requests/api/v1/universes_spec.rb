@@ -69,6 +69,21 @@ RSpec.describe 'Api::V1::Universes', type: :request do
     expect(response_ids).to contain_exactly(own_universe.id)
   end
 
+  it 'filters and sorts visible universes with Ransack params' do
+    later_universe = create(:universe, user: user, name: 'Zephyr Verse', genre: 'fantasy', public: true)
+    earlier_universe = create(:universe, user: other_user, name: 'Aurora Verse', genre: 'fantasy', public: true)
+    create(:universe, user: user, name: 'Neon Verse', genre: 'cyberpunk', public: true)
+    create(:universe, user: other_user, name: 'Hidden Verse', genre: 'fantasy', public: false)
+
+    get '/api/v1/universes',
+      params: { q: { name_cont: 'Verse', genre_eq: 'fantasy', s: 'name desc' } },
+      headers: headers
+
+    response_ids = JSON.parse(response.body).map { |universe| universe['id'] }
+    expect(response).to have_http_status(:ok)
+    expect(response_ids).to eq([later_universe.id, earlier_universe.id])
+  end
+
   it 'can show another user public universe' do
     public_universe = create(:universe, user: other_user, public: true)
 
@@ -133,12 +148,14 @@ RSpec.describe 'Api::V1::Universes', type: :request do
     universe = create(:universe, user: user, public: false)
 
     patch "/api/v1/universes/#{universe.id}", params: {
-      universe: { name: 'Updated Universe', description: 'Updated notes', public: true }
+      universe: { name: 'Updated Universe', genre: 'urban fantasy', description: 'Updated notes', public: true }
     }, headers: headers
 
     expect(response).to have_http_status(:ok)
+    expect(JSON.parse(response.body)['genre']).to eq('urban fantasy')
     expect(universe.reload).to have_attributes(
       name: 'Updated Universe',
+      genre: 'urban_fantasy',
       description: 'Updated notes',
       public: true
     )
@@ -146,10 +163,11 @@ RSpec.describe 'Api::V1::Universes', type: :request do
 
   it 'creates a universe for the current user' do
     post '/api/v1/universes', params: {
-      universe: { name: 'Prime', description: 'Main continuity', public: true }
+      universe: { name: 'Prime', genre: 'sci-fi', description: 'Main continuity', public: true }
     }, headers: headers
 
     expect(response).to have_http_status(:created)
-    expect(user.universes.find_by(name: 'Prime', public: true)).to be_present
+    expect(JSON.parse(response.body)['genre']).to eq('sci-fi')
+    expect(user.universes.find_by(name: 'Prime', genre: 'sci-fi', public: true)).to be_present
   end
 end

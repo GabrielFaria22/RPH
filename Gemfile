@@ -17,6 +17,7 @@ gem "devise-jwt", "~> 0.11"
 gem "blueprinter", "~> 1.0"
 gem "oj", "~> 3.16"
 gem "rack-cors", "~> 2.0"
+gem "ransack", "~> 4.4"
 
 # Background Jobs
 gem "sidekiq", "~> 7.2"

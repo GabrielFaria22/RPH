@@ -1,4 +1,6 @@
 class FamilyTree < ApplicationRecord
+  include AttachableImages
+
   belongs_to :universe
   belongs_to :family, optional: true
 
@@ -9,6 +11,18 @@ class FamilyTree < ApplicationRecord
   validates :name, presence: true
   validate :layout_must_be_an_object
   validate :family_belongs_to_universe
+
+  def self.ransackable_attributes(_auth_object = nil)
+    %w[
+      created_at
+      family_id
+      id
+      name
+      public
+      universe_id
+      updated_at
+    ]
+  end
 
   private
 

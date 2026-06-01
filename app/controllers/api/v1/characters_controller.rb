@@ -67,6 +67,8 @@ module Api
         @character = scope
           .with_attached_portrait_image
           .with_attached_cover_image
+          .with_attached_banner_image
+          .with_attached_crest_image
           .with_attached_misc_images
           .includes(:relations)
           .find(params[:id])
@@ -109,7 +111,14 @@ module Api
           :family_id,
           :faction_id,
           :portrait_image,
+          :portrait_image_description,
           :cover_image,
+          :cover_image_description,
+          :banner_image,
+          :banner_image_description,
+          :crest_image,
+          :crest_image_description,
+          :misc_images_description,
           misc_images: []
         )
       end
@@ -118,10 +127,11 @@ module Api
         characters = scope
           .with_attached_portrait_image
           .with_attached_cover_image
+          .with_attached_banner_image
+          .with_attached_crest_image
           .with_attached_misc_images
           .includes(:relations)
-        characters = characters.where('characters.name ILIKE ?', "%#{params[:q]}%") if params[:q].present?
-        characters
+        search_records(characters)
       end
 
       def owns_character?(character)

@@ -1,4 +1,6 @@
 class FamilyBlueprint < Blueprinter::Base
+  include ImageAttachmentFields
+
   identifier :id
 
   fields :name, :description, :public, :universe_id, :leader_character_id, :faction_id, :created_at, :updated_at

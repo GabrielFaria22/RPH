@@ -5,15 +5,15 @@ module Api
       before_action :set_faction, only: %i[show update destroy]
 
       def index
-        factions = search_by_name(current_user.admin? ? Faction.all : Faction.visible_to(current_user))
+        factions = search_records(current_user.admin? ? Faction.all : Faction.visible_to(current_user))
 
-        render json: FactionBlueprint.render(factions.includes(:families), current_user: current_user)
+        render json: FactionBlueprint.render(with_attached_images(factions).includes(:families), current_user: current_user)
       end
 
       def mine
-        factions = search_by_name(current_user.factions)
+        factions = search_records(current_user.factions)
 
-        render json: FactionBlueprint.render(factions.includes(:families), current_user: current_user)
+        render json: FactionBlueprint.render(with_attached_images(factions).includes(:families), current_user: current_user)
       end
 
       def show
@@ -81,11 +81,37 @@ module Api
 
       def set_faction
         scope = current_user.admin? ? Faction.all : Faction.visible_to(current_user)
-        @faction = scope.includes(:families).find(params[:id])
+        @faction = with_attached_images(scope).includes(:families).find(params[:id])
       end
 
       def faction_params
-        params.require(:faction).permit(:name, :description, :public, :universe_id, :leader_character_id, family_ids: [])
+        params.require(:faction).permit(
+          :name,
+          :description,
+          :public,
+          :universe_id,
+          :leader_character_id,
+          :portrait_image,
+          :portrait_image_description,
+          :cover_image,
+          :cover_image_description,
+          :banner_image,
+          :banner_image_description,
+          :crest_image,
+          :crest_image_description,
+          :misc_images_description,
+          family_ids: [],
+          misc_images: []
+        )
+      end
+
+      def with_attached_images(scope)
+        scope
+          .with_attached_portrait_image
+          .with_attached_cover_image
+          .with_attached_banner_image
+          .with_attached_crest_image
+          .with_attached_misc_images
       end
 
       def faction_attributes(attributes, universe)
@@ -103,12 +129,6 @@ module Api
 
       def render_at_least_one_family_required
         render json: { errors: ['Faction must have at least one family'] }, status: :unprocessable_entity
-      end
-
-      def search_by_name(scope)
-        return scope unless params[:q].present?
-
-        scope.where('factions.name ILIKE ?', "%#{params[:q]}%")
       end
 
       def owns_faction?(faction)

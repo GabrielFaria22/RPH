@@ -22,6 +22,24 @@ class Character < ApplicationRecord
   scope :owned_by, ->(user) { joins(:universe).where(universes: { user_id: user.id }) }
   scope :visible_to, ->(user) { left_joins(:universe).where('characters.public = ? OR universes.user_id = ?', true, user.id) }
 
+  def self.ransackable_attributes(_auth_object = nil)
+    %w[
+      age
+      created_at
+      faction_id
+      family_id
+      full_name
+      id
+      name
+      nickname
+      occupation
+      public
+      universe_id
+      updated_at
+      world_id
+    ]
+  end
+
   validate :world_belongs_to_universe
   validate :family_belongs_to_universe
   validate :faction_belongs_to_universe

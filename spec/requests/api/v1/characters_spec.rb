@@ -87,6 +87,21 @@ RSpec.describe 'Api::V1::Characters', type: :request do
     expect(response_ids).to contain_exactly(own_character.id)
   end
 
+  it 'filters and sorts visible characters with Ransack params' do
+    create(:character, universe: create(:universe, user: user), name: 'Private Aster', public: false)
+    later_character = create(:character, universe: create(:universe, user: user), name: 'Zephyr Aster', public: true)
+    earlier_character = create(:character, universe: create(:universe, user: other_user), name: 'Aurora Aster', public: true)
+    create(:character, universe: create(:universe, user: other_user), name: 'Hidden Aster', public: false)
+
+    get '/api/v1/characters',
+      params: { q: { name_cont: 'Aster', public_eq: true, s: 'name desc' } },
+      headers: headers
+
+    response_ids = JSON.parse(response.body).map { |character| character['id'] }
+    expect(response).to have_http_status(:ok)
+    expect(response_ids).to eq([later_character.id, earlier_character.id])
+  end
+
   it 'does not expose another user character' do
     character = create(:character, universe: create(:universe, user: other_user))
 

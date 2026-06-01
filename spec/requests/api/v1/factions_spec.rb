@@ -2,6 +2,7 @@ require 'rails_helper'
 
 RSpec.describe 'Api::V1::Factions', type: :request do
   let(:user) { create(:user) }
+  let(:other_user) { create(:user) }
   let(:token) { Warden::JWTAuth::UserEncoder.new.call(user, :user, nil).first }
   let(:headers) { { 'Authorization' => "Bearer #{token}" } }
 
@@ -24,6 +25,21 @@ RSpec.describe 'Api::V1::Factions', type: :request do
     expect(response).to have_http_status(:created)
     faction = universe.factions.find_by!(name: 'Northreach Court')
     expect(faction.families).to contain_exactly(family)
+  end
+
+  it 'filters and sorts visible factions with Ransack params' do
+    later_faction = create(:faction, universe: create(:universe, user: user), name: 'Zephyr Court', public: true)
+    earlier_faction = create(:faction, universe: create(:universe, user: other_user), name: 'Aurora Court', public: true)
+    create(:faction, universe: create(:universe, user: user), name: 'Ashen Guild', public: true)
+    create(:faction, universe: create(:universe, user: other_user), name: 'Hidden Court', public: false)
+
+    get '/api/v1/factions',
+      params: { q: { name_cont: 'Court', public_eq: true, s: 'name desc' } },
+      headers: headers
+
+    response_ids = JSON.parse(response.body).map { |faction| faction['id'] }
+    expect(response).to have_http_status(:ok)
+    expect(response_ids).to eq([later_faction.id, earlier_faction.id])
   end
 
   it 'rejects factions without families' do

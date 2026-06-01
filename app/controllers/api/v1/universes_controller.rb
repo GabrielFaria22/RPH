@@ -5,13 +5,13 @@ module Api
       before_action :set_universe, only: %i[show update destroy]
 
       def index
-        universes = search_by_name(current_user.admin? ? Universe.all : Universe.visible_to(current_user))
+        universes = search_records(current_user.admin? ? Universe.all : Universe.visible_to(current_user))
 
         render json: UniverseBlueprint.render(with_attached_images(universes), current_user: current_user)
       end
 
       def mine
-        universes = search_by_name(current_user.universes)
+        universes = search_records(current_user.universes)
 
         render json: UniverseBlueprint.render(with_attached_images(universes), current_user: current_user)
       end
@@ -56,17 +56,31 @@ module Api
       end
 
       def universe_params
-        params.require(:universe).permit(:name, :description, :public, :portrait_image, :cover_image, misc_images: [])
-      end
-
-      def search_by_name(scope)
-        return scope unless params[:q].present?
-
-        scope.where('universes.name ILIKE ?', "%#{params[:q]}%")
+        params.require(:universe).permit(
+          :name,
+          :genre,
+          :description,
+          :public,
+          :portrait_image,
+          :portrait_image_description,
+          :cover_image,
+          :cover_image_description,
+          :banner_image,
+          :banner_image_description,
+          :crest_image,
+          :crest_image_description,
+          :misc_images_description,
+          misc_images: []
+        )
       end
 
       def with_attached_images(scope)
-        scope.with_attached_portrait_image.with_attached_cover_image.with_attached_misc_images
+        scope
+          .with_attached_portrait_image
+          .with_attached_cover_image
+          .with_attached_banner_image
+          .with_attached_crest_image
+          .with_attached_misc_images
       end
 
       def owns_universe?(universe)

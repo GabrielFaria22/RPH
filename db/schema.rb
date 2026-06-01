@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_05_27_000900) do
+ActiveRecord::Schema[7.1].define(version: 2026_05_31_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -51,6 +51,11 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_27_000900) do
     t.string "occupation"
     t.text "description"
     t.text "story"
+    t.string "portrait_image_description", limit: 140
+    t.string "cover_image_description", limit: 140
+    t.string "banner_image_description", limit: 140
+    t.string "crest_image_description", limit: 140
+    t.string "misc_images_description", limit: 140
     t.boolean "public", default: false, null: false
     t.bigint "universe_id", null: false
     t.bigint "world_id"
@@ -81,6 +86,11 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_27_000900) do
   create_table "factions", force: :cascade do |t|
     t.string "name", null: false
     t.text "description"
+    t.string "portrait_image_description", limit: 140
+    t.string "cover_image_description", limit: 140
+    t.string "banner_image_description", limit: 140
+    t.string "crest_image_description", limit: 140
+    t.string "misc_images_description", limit: 140
     t.boolean "public", default: false, null: false
     t.bigint "universe_id", null: false
     t.bigint "leader_character_id", null: false
@@ -95,6 +105,11 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_27_000900) do
   create_table "families", force: :cascade do |t|
     t.string "name", null: false
     t.text "description"
+    t.string "portrait_image_description", limit: 140
+    t.string "cover_image_description", limit: 140
+    t.string "banner_image_description", limit: 140
+    t.string "crest_image_description", limit: 140
+    t.string "misc_images_description", limit: 140
     t.boolean "public", default: false, null: false
     t.bigint "universe_id", null: false
     t.bigint "leader_character_id", null: false
@@ -122,6 +137,11 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_27_000900) do
   create_table "family_trees", force: :cascade do |t|
     t.string "name", null: false
     t.text "description"
+    t.string "portrait_image_description", limit: 140
+    t.string "cover_image_description", limit: 140
+    t.string "banner_image_description", limit: 140
+    t.string "crest_image_description", limit: 140
+    t.string "misc_images_description", limit: 140
     t.boolean "public", default: false, null: false
     t.jsonb "layout", default: {}, null: false
     t.bigint "universe_id", null: false
@@ -132,6 +152,31 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_27_000900) do
     t.index ["public"], name: "index_family_trees_on_public"
     t.index ["universe_id", "name"], name: "index_family_trees_on_universe_id_and_name"
     t.index ["universe_id"], name: "index_family_trees_on_universe_id"
+  end
+
+  create_table "locations", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "location_type"
+    t.text "brief_description"
+    t.text "full_description"
+    t.string "portrait_image_description", limit: 140
+    t.string "cover_image_description", limit: 140
+    t.string "banner_image_description", limit: 140
+    t.string "crest_image_description", limit: 140
+    t.string "misc_images_description", limit: 140
+    t.boolean "public", default: false, null: false
+    t.bigint "universe_id"
+    t.bigint "world_id"
+    t.bigint "parent_location_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["parent_location_id", "name"], name: "index_locations_on_parent_location_id_and_name"
+    t.index ["parent_location_id"], name: "index_locations_on_parent_location_id"
+    t.index ["public"], name: "index_locations_on_public"
+    t.index ["universe_id", "name"], name: "index_locations_on_universe_id_and_name"
+    t.index ["universe_id"], name: "index_locations_on_universe_id"
+    t.index ["world_id", "name"], name: "index_locations_on_world_id_and_name"
+    t.index ["world_id"], name: "index_locations_on_world_id"
   end
 
   create_table "people", force: :cascade do |t|
@@ -158,11 +203,18 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_27_000900) do
 
   create_table "universes", force: :cascade do |t|
     t.string "name", null: false
+    t.string "genre", default: "other", null: false
     t.text "description"
+    t.string "portrait_image_description", limit: 140
+    t.string "cover_image_description", limit: 140
+    t.string "banner_image_description", limit: 140
+    t.string "crest_image_description", limit: 140
+    t.string "misc_images_description", limit: 140
     t.boolean "public", default: false, null: false
     t.bigint "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["genre"], name: "index_universes_on_genre"
     t.index ["public"], name: "index_universes_on_public"
     t.index ["user_id", "name"], name: "index_universes_on_user_id_and_name"
     t.index ["user_id"], name: "index_universes_on_user_id"
@@ -187,6 +239,11 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_27_000900) do
   create_table "worlds", force: :cascade do |t|
     t.string "name", null: false
     t.text "description"
+    t.string "portrait_image_description", limit: 140
+    t.string "cover_image_description", limit: 140
+    t.string "banner_image_description", limit: 140
+    t.string "crest_image_description", limit: 140
+    t.string "misc_images_description", limit: 140
     t.boolean "public", default: false, null: false
     t.bigint "universe_id", null: false
     t.datetime "created_at", null: false
@@ -213,6 +270,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_27_000900) do
   add_foreign_key "family_relations", "families", column: "related_family_id"
   add_foreign_key "family_trees", "families"
   add_foreign_key "family_trees", "universes"
+  add_foreign_key "locations", "locations", column: "parent_location_id"
+  add_foreign_key "locations", "universes"
+  add_foreign_key "locations", "worlds"
   add_foreign_key "people", "users"
   add_foreign_key "relation", "characters"
   add_foreign_key "relation", "characters", column: "related_character_id"

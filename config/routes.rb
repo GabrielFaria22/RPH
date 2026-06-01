@@ -22,6 +22,9 @@ Rails.application.routes.draw do
       resources :characters, except: %i[new edit] do
         get :mine, on: :collection
       end
+      resources :locations, except: %i[new edit] do
+        get :mine, on: :collection
+      end
       resources :families, except: %i[new edit] do
         get :mine, on: :collection
       end
