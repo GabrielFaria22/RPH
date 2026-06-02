@@ -8,12 +8,14 @@ module Seeds
         leader_character: context.fetch(:eddard_stark),
         faction: context.fetch(:the_north),
         name: 'House Stark',
-        description: 'The ruling house of Winterfell and the North.'
+        description: 'The ancient ruling house of Winterfell and the North, known for its old gods, direwolf sigil, and words: Winter is Coming.'
       )
 
       [
         context.fetch(:eddard_stark),
+        context.fetch(:catelyn_stark),
         context.fetch(:jon_snow),
+        context.fetch(:robb_stark),
         context.fetch(:sansa_stark),
         context.fetch(:arya_stark)
       ].each do |character|

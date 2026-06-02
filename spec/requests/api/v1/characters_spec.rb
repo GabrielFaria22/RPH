@@ -160,7 +160,7 @@ RSpec.describe 'Api::V1::Characters', type: :request do
     character = JSON.parse(response.body).first
     expect(response).to have_http_status(:ok)
     expect(character).to include('name', 'universe_id', 'world_id')
-    expect(character).not_to include('relations', 'universe', 'world', 'families', 'factions', 'family_trees')
+    expect(character).not_to include('relations', 'universe', 'world', 'families', 'related_families', 'factions', 'family_trees')
   end
 
   it 'shows related character sheet data' do
@@ -198,6 +198,10 @@ RSpec.describe 'Api::V1::Characters', type: :request do
     expect(body['universe']['name']).to eq('A World of Ice and Fire')
     expect(body['world']['name']).to eq('Planetos')
     expect(body['families'].map { |related_family| related_family['name'] }).to include('House Stark')
+    expect(body['related_families'].first['family']['name']).to eq('House Stark')
+    expect(body['related_families'].first['family']['family_tree_id']).to eq(family.family_tree.id)
+    expect(body['related_families'].first['family_tree']['id']).to eq(family.family_tree.id)
+    expect(body['related_families'].first['family_tree']['layout']['nodes'].map { |node| node['character_id'] }).to include(jon.id)
     expect(body['factions'].map { |related_faction| related_faction['name'] }).to include('The North')
     expect(body['family_trees'].first['layout']['nodes'].map { |node| node['character_id'] }).to include(jon.id)
   end

@@ -46,6 +46,15 @@ class CharacterBlueprint < Blueprinter::Base
     )
   end
 
+  field :related_families do |character, options|
+    CharacterBlueprint.visible_scope(character.families, Family, options[:current_user]).map do |family|
+      {
+        family: FamilyBlueprint.render_as_hash(family, current_user: options[:current_user]),
+        family_tree: family.family_tree.present? ? FamilyTreeBlueprint.render_as_hash(family.family_tree, current_user: options[:current_user]) : nil
+      }
+    end
+  end
+
   field :factions do |character, options|
     FactionBlueprint.render_as_hash(
       CharacterBlueprint.visible_scope(character.factions, Faction, options[:current_user]),
