@@ -1,4 +1,7 @@
 Rails.application.routes.draw do
+  # for the production
+  get "/up", to: proc { [200, { "Content-Type" => "text/plain" }, ["OK"]] }
+
   if Rails.env.development?
     mount Rswag::Api::Engine => '/api-docs'
     mount Rswag::Ui::Engine => '/api-docs'
